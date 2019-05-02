@@ -108,11 +108,10 @@ class PostController extends Controller
      */
     public function create(FormBuilder $formBuilder)
     {
-        Auth::user()->givePermissionTo('blog_post_create');
         $this->authorize('create', Post::class);
         $form = $formBuilder->create(PostForm::class, [
             'method' => 'POST',
-            'url' => route('blog.admin.store')
+            'url' => route('blog.admin.post.store')
         ]);
         $form->modify('online', 'select', [
             'selected' => [1],
@@ -180,7 +179,7 @@ class PostController extends Controller
         $post = Post::findOrFail($id);
         $form = $formBuilder->create(PostForm::class, [
             'method' => 'POST',
-            'url' => route('blog.admin.update', ['id' => $id]),
+            'url' => route('blog.admin.post.update', ['id' => $id]),
             'model' => $post
         ]);
         return view('blog::application.posts.post')

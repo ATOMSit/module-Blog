@@ -47,7 +47,7 @@
                                         confirmButtonClass: "btn btn-focus--pill--air",
                                         confirmButtonText: "Yes, delete it!"
                                     }).then(function (e) {
-                                        window.location.href = '{{route("admin.home")}}';
+                                        window.location.href = '';
                                     })
                                 }
                             }))
