@@ -3,9 +3,9 @@
 namespace Modules\Blog\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
+use Modules\Blog\Database\Seeders\TenantDatabaseSeeder\PermissionsBlogTableSeeder;
 
-class TenantDatabaseSeeder extends Seeder
+class TenantBlogDatabaseSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,6 +14,6 @@ class TenantDatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(\PermissionsTableSeeder::class);
+        $this->call(PermissionsBlogTableSeeder::class);
     }
 }

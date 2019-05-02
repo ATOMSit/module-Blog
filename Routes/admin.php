@@ -11,6 +11,17 @@
 |
 */
 
-Route::prefix('blog')->group(function() {
-    Route::get('/', 'BlogController@index');
+Route::prefix('posts')->as('post.')->group(function() {
+    Route::get('datatable', 'PostController@datatable')
+        ->name('datatable');
+    Route::get('index', 'PostController@index')
+        ->name('index');
+    Route::get('create', 'PostController@create')
+        ->name('create');
+    Route::post('store', 'PostController@store')
+        ->name('store');
+    Route::get('edit/{id}', 'PostController@edit')
+        ->name('edit');
+    Route::post('update/{id}', 'PostController@update')
+        ->name('update');
 });

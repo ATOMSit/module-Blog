@@ -1,10 +1,12 @@
 <?php
 
+namespace Modules\Blog\Database\Seeders\TenantDatabaseSeeder;
+
 use Illuminate\Database\Seeder;
 use App\Permission;
 use App\Role;
 
-class PermissionsTableSeeder extends Seeder
+class PermissionsBlogTableSeeder extends Seeder
 {
     /**
      * @var \Spatie\Permission\Contracts\Role

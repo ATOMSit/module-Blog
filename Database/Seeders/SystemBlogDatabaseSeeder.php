@@ -5,7 +5,7 @@ namespace Modules\Blog\Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 
-class SystemDatabaseSeeder extends Seeder
+class SystemBlogDatabaseSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,8 +14,6 @@ class SystemDatabaseSeeder extends Seeder
      */
     public function run()
     {
-        Model::unguard();
 
-        // $this->call("OthersTableSeeder");
     }
 }
