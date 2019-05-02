@@ -30,6 +30,7 @@ class PostController extends Controller
     public function __construct(PostRepositoryInterface $post)
     {
         $this->post = $post;
+        $this->middleware('auth', ['except' => ['show', 'datatable']]);
     }
 
     public function datatable()
@@ -84,7 +85,8 @@ class PostController extends Controller
 
     /**
      * Display a listing of the resource.
-     * @return Response
+     *
+     * @return \Illuminate\Http\Response
      */
     public function index(Builder $builder)
     {
@@ -115,8 +117,26 @@ class PostController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param int $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function show(int $id)
+    {
+        $post = $this->post->find($id);
+        $this->authorize('show', $post);
+        return view('blog::show')
+            ->with('post', $post);
+    }
+
+    /**
      * Show the form for creating a new resource.
-     * @return Response
+     *
+     * @param FormBuilder $formBuilder
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function create(FormBuilder $formBuilder)
     {
@@ -139,35 +159,29 @@ class PostController extends Controller
      * Store a newly created resource in storage.
      *
      * @param PostRequest $request
-     * @return Response
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function store(PostRequest $request)
     {
+        $this->authorize('create', Post::class);
         $this->post->store(Auth::user()->getAuthIdentifier(), $request->all());
         return back()
             ->with('success', "L'article a correctement était publié sur votre site internet");
     }
 
     /**
-     * Show the specified resource.
-     * @param int $id
-     * @return Response
-     */
-    public function show(int $id)
-    {
-        $post = $this->post->find($id);
-        return view('blog::show')
-            ->with('post', $post);
-    }
-
-    /**
      * Show the form for editing the specified resource.
+     *
+     * @param FormBuilder $formBuilder
      * @param int $id
-     * @return Response
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function edit(FormBuilder $formBuilder, int $id)
     {
         $post = $this->post->find($id);
+        $this->authorize('update', $post);
         $form = $formBuilder->create(PostForm::class, [
             'method' => 'POST',
             'url' => route('blog.admin.post.update', ['id' => $id]),
@@ -179,12 +193,16 @@ class PostController extends Controller
 
     /**
      * Update the specified resource in storage.
+     *
      * @param PostRequest $request
      * @param int $id
-     * @return Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function update(PostRequest $request, int $id)
     {
+        $post = $this->post->find($id);
+        $this->authorize('update', $post);
         DB::beginTransaction();
         try {
             $this->post->update($id, $request->all());
@@ -199,11 +217,14 @@ class PostController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     *
      * @param int $id
-     * @return Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function destroy(int $id)
     {
+        $post = $this->post->find($id);
+        $this->authorize('delete', $post);
         $this->post->delete($id);
     }
 }
