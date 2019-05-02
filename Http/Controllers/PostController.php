@@ -96,7 +96,7 @@ class PostController extends Controller
                 'data' => $default_column, 'name' => $default_column, 'title' => $default_column
             ]);
         }
-        $builder->ajax(route('blog.admin.datatable'));
+        $builder->ajax(route('blog.admin.post.datatable'));
         return view('blog::application.posts.index')
             ->with('html', $html)
             ->with('locales', $array);

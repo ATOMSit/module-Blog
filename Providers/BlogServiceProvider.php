@@ -33,6 +33,8 @@ class BlogServiceProvider extends ServiceProvider
         $this->app->register(RelationshipsServiceProvider::class);
 
         $this->app->register(AuthServiceProvider::class);
+
+        $this->app->register(RepositoryServiceProvider::class);
     }
 
     /**
