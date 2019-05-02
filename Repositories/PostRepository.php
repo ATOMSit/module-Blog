@@ -5,6 +5,7 @@ namespace Modules\Blog\Repositories;
 
 
 use App\User;
+use Illuminate\Database\Eloquent\Model;
 use Modules\Blog\Entities\Post;
 
 class PostRepository implements PostRepositoryInterface
@@ -38,7 +39,7 @@ class PostRepository implements PostRepositoryInterface
      * @param array $post_data
      * @return mixed|void
      */
-    public function store(User $user, array $post_data)
+    public function store(Model $model, array $post_data)
     {
         $post = new Post([
             'title' => $post_data['title'],
@@ -49,7 +50,8 @@ class PostRepository implements PostRepositoryInterface
             'published_at' => $post_data['published_at'],
             'unpublished_at' => $post_data['unpublished_at'],
         ]);
-        $user->blog__posts()->save($post);
+        $model->blog__posts()->save($post);
+        return $post;
     }
 
     /**

@@ -2,10 +2,11 @@
 
 namespace Modules\Blog\Providers;
 
+use Illuminate\Support\ServiceProvider;
 use Modules\Blog\Repositories\PostRepository;
 use Modules\Blog\Repositories\PostRepositoryInterface;
 
-class RepositoryServiceProvider
+class RepositoryServiceProvider extends ServiceProvider
 {
     /**
      * Indicates if loading of the provider is deferred.

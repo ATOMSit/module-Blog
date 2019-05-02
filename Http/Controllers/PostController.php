@@ -11,13 +11,25 @@ use Modules\Blog\Entities\Post;
 use Modules\Blog\Forms\PostForm;
 use Modules\Blog\Http\Requests\PostRequest;
 use Illuminate\Http\Response;
+use Modules\Blog\Repositories\PostRepositoryInterface;
 use Yajra\DataTables\Facades\DataTables;
 use Yajra\DataTables\Html\Builder;
 
 class PostController extends Controller
 {
-    public function __construct()
+    /**
+     * @var PostRepositoryInterface
+     */
+    protected $post;
+
+    /**
+     * PostController constructor.
+     *
+     * @param PostRepositoryInterface $post
+     */
+    public function __construct(PostRepositoryInterface $post)
     {
+        $this->post = $post;
     }
 
     public function datatable()
@@ -131,30 +143,7 @@ class PostController extends Controller
      */
     public function store(PostRequest $request)
     {
-        if ($request->get('unpublished_at') !== null) {
-            $unpublished_at = Carbon::now();
-        } else {
-            $unpublished_at = null;
-        }
-        $post = new Post([
-            'title' => $request->get('title'),
-            'slug' => 'ok',
-            'body' => $request->get('body'),
-            'online' => $request->get('online'),
-            'indexable' => $request->get('indexable'),
-            'published_at' => Carbon::now(),
-            'unpublished_at' => null
-        ]);
-        $user = Auth::user();
-        $user->blog__posts()->save($post);
-        if ($request->file('file') !== null) {
-            $width = $request->get('picture')['width'];
-            $height = $request->get('picture')['height'];
-            $x = $request->get('picture')['x'];
-            $y = $request->get('picture')['y'];
-            $post->addMedia($request->file('file'))
-                ->toMediaCollection('cover');
-        }
+        $this->post->store(Auth::user()->getAuthIdentifier(), $request->all());
         return back()
             ->with('success', "L'article a correctement était publié sur votre site internet");
     }
@@ -164,9 +153,11 @@ class PostController extends Controller
      * @param int $id
      * @return Response
      */
-    public function show($id)
+    public function show(int $id)
     {
-        return view('blog::show');
+        $post = $this->post->find($id);
+        return view('blog::show')
+            ->with('post', $post);
     }
 
     /**
@@ -174,9 +165,9 @@ class PostController extends Controller
      * @param int $id
      * @return Response
      */
-    public function edit(FormBuilder $formBuilder, $id)
+    public function edit(FormBuilder $formBuilder, int $id)
     {
-        $post = Post::findOrFail($id);
+        $post = $this->post->find($id);
         $form = $formBuilder->create(PostForm::class, [
             'method' => 'POST',
             'url' => route('blog.admin.post.update', ['id' => $id]),
@@ -192,20 +183,11 @@ class PostController extends Controller
      * @param int $id
      * @return Response
      */
-    public function update(PostRequest $request, $id)
+    public function update(PostRequest $request, int $id)
     {
-        $post = Post::findOrFail($id);
         DB::beginTransaction();
         try {
-            $post->update([
-                'title' => $request->get('title'),
-                'slug' => 'ok',
-                'body' => $request->get('body'),
-                'online' => $request->get('online'),
-                'indexable' => $request->get('indexable'),
-                'published_at' => Carbon::now(),
-                'unpublished_at' => null
-            ]);
+            $this->post->update($id, $request->all());
             DB::commit();
         } catch (\Exception $ex) {
             DB::rollback();
@@ -220,8 +202,8 @@ class PostController extends Controller
      * @param int $id
      * @return Response
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        //
+        $this->post->delete($id);
     }
 }

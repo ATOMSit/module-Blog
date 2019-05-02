@@ -5,6 +5,7 @@ namespace Modules\Blog\Repositories;
 
 
 use App\User;
+use Illuminate\Database\Eloquent\Model;
 
 interface PostRepositoryInterface
 {
@@ -30,7 +31,7 @@ interface PostRepositoryInterface
      * @param array $post_data
      * @return mixed
      */
-    public function store(User $user, array $post_data);
+    public function store(Model $model, array $post_data);
 
     /**
      * Update a post.
