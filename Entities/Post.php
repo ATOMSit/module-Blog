@@ -6,10 +6,11 @@ use Greabock\Tentacles\EloquentTentacle;
 use Hyn\Tenancy\Traits\UsesTenantConnection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
-    use UsesTenantConnection, EloquentTentacle;
+    use UsesTenantConnection, EloquentTentacle, SoftDeletes;
 
     /**
      * The table associated with the model.

@@ -4,21 +4,25 @@
 namespace Modules\Blog\Repositories;
 
 
+use App\User;
+use Modules\Blog\Entities\Post;
+
 class PostRepository implements PostRepositoryInterface
 {
     /**
-     * Get's a post by it's ID
+     * Get a specific post.
      *
-     * @param int
-     * @return collection
+     * @param int $post_id
+     * @return mixed
      */
-    public function get($post_id)
+    public function find(int $post_id)
     {
-        return Post::find($post_id);
+        return Post::query()
+            ->findOrFail($post_id);
     }
 
     /**
-     * Get's all posts.
+     * Get all post.
      *
      * @return mixed
      */
@@ -27,39 +31,72 @@ class PostRepository implements PostRepositoryInterface
         return Post::all();
     }
 
-    public function store()
+    /**
+     * Create a new record.
+     *
+     * @param User $user
+     * @param array $post_data
+     * @return mixed|void
+     */
+    public function store(User $user, array $post_data)
     {
-        // TODO: Implement store() method.
+        $post = new Post([
+            'title' => $post_data['title'],
+            'slug' => $post_data['slug'],
+            'body' => $post_data['body'],
+            'online' => $post_data['online'],
+            'indexable' => $post_data['indexable'],
+            'published_at' => $post_data['published_at'],
+            'unpublished_at' => $post_data['unpublished_at'],
+        ]);
+        $user->blog__posts()->save($post);
     }
 
     /**
-     * Updates a post.
+     * Update a post.
      *
-     * @param int
-     * @param array
+     * @param int $post_id
+     * @param array $post_data
+     * @return mixed
      */
     public function update($post_id, array $post_data)
     {
-        Post::find($post_id)->update($post_data);
+        $post = $this->find($post_id);
+        $post->update([
+            'title' => $post_data['title'],
+            'slug' => $post_data['slug'],
+            'body' => $post_data['body'],
+            'online' => $post_data['online'],
+            'indexable' => $post_data['indexable'],
+            'published_at' => $post_data['published_at'],
+            'unpublished_at' => $post_data['unpublished_at']
+        ]);
+        return $post;
     }
 
     /**
-     * Deletes a post.
+     * Delete a post.
      *
-     * @param int
+     * @param $post_id
+     * @return mixed
      */
-    public function delete($post_id)
+    public function delete(int $post_id)
     {
-        Post::destroy($post_id);
+        return Post::destroy($post_id);
     }
 
     public function restore($post_id)
     {
-        // TODO: Implement restore() method.
+        return Post::withoutTrashed()
+            ->find($post_id)
+            ->restore();
     }
 
-    public function forceDelete($post_id)
+    public function forceDelete(int $post_id)
     {
-        // TODO: Implement forceDelete() method.
+        return Post::query()
+            ->where('id', $post_id)
+            ->first()
+            ->forceDelete();
     }
 }
