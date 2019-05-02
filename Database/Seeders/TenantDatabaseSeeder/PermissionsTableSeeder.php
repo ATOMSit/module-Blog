@@ -44,7 +44,9 @@ class PermissionsTableSeeder extends Seeder
             'blog_post_show',
             'blog_post_create',
             'blog_post_update',
-            'blog_post_delete'
+            'blog_post_delete',
+            'blog_post_restore',
+            'blog_post_forceDelete'
         ];
         foreach ($permissions as $permission) {
             Permission::findOrCreate($permission);
