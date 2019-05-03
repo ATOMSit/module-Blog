@@ -166,7 +166,15 @@ class PostController extends Controller
     public function store(PostRequest $request)
     {
         $this->authorize('create', Post::class);
-        $this->post->store(Auth::user(), $request->all());
+        $post = $this->post->store(Auth::user(), $request->all());
+        if ($request->file('file') !== null) {
+            $width = $request->get('picture')['width'];
+            $height = $request->get('picture')['height'];
+            $x = $request->get('picture')['x'];
+            $y = $request->get('picture')['y'];
+            $post->addMedia($request->file('file'))
+                ->toMediaCollection('cover');
+        }
         return back()
             ->with('success', "L'article a correctement était publié sur votre site internet");
     }

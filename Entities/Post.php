@@ -2,16 +2,20 @@
 
 namespace Modules\Blog\Entities;
 
+use App\Media;
 use Greabock\Tentacles\EloquentTentacle;
 use Hyn\Tenancy\Traits\UsesTenantConnection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
+use Spatie\MediaLibrary\HasMedia\HasMedia;
+use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Spatie\Image\Manipulations;
 
-class Post extends Model
+class Post extends Model implements HasMedia
 {
-    use UsesTenantConnection, EloquentTentacle, HasTranslations, SoftDeletes;
+    use UsesTenantConnection, EloquentTentacle, HasTranslations, HasMediaTrait, SoftDeletes;
 
     /**
      * The table associated with the model.
@@ -78,6 +82,22 @@ class Post extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime'
     ];
+
+    /*
+     * Definition of collections for the media
+     *
+     * Return MediaCollection
+     */
+    public function registerMediaCollections()
+    {
+        $this
+            ->addMediaCollection('cover')
+            ->registerMediaConversions(function (Media $media) {
+                $this
+                    ->addMediaConversion('thumb')
+                    ->fit(Manipulations::FIT_STRETCH, 250, 250);
+            });
+    }
 
     /**
      * Returns the User who is the author of this Post
