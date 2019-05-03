@@ -46,6 +46,7 @@ class PostForm extends Form
             ])
             ->add('picture', 'form', [
                 'class' => $this->formBuilder->create(PictureForm::class)
-            ]);
+            ])
+            ->add('submit', Field::BUTTON_SUBMIT);
     }
 }

@@ -140,6 +140,7 @@ class PostController extends Controller
      */
     public function create(FormBuilder $formBuilder)
     {
+        Auth::user()->givePermissionTo('blog_post_create');
         $this->authorize('create', Post::class);
         $form = $formBuilder->create(PostForm::class, [
             'method' => 'POST',
@@ -165,7 +166,7 @@ class PostController extends Controller
     public function store(PostRequest $request)
     {
         $this->authorize('create', Post::class);
-        $this->post->store(Auth::user()->getAuthIdentifier(), $request->all());
+        $this->post->store(Auth::user(), $request->all());
         return back()
             ->with('success', "L'article a correctement était publié sur votre site internet");
     }

@@ -5,6 +5,7 @@ namespace Modules\Blog\Repositories;
 
 
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Blog\Entities\Post;
 
@@ -41,14 +42,17 @@ class PostRepository implements PostRepositoryInterface
      */
     public function store(Model $model, array $post_data)
     {
+        if ($post_data['unpublished_at'] == null) {
+            $unpublished_at = Carbon::now();
+        }
         $post = new Post([
             'title' => $post_data['title'],
-            'slug' => $post_data['slug'],
+            'slug' => "test",
             'body' => $post_data['body'],
             'online' => $post_data['online'],
             'indexable' => $post_data['indexable'],
-            'published_at' => $post_data['published_at'],
-            'unpublished_at' => $post_data['unpublished_at'],
+            'published_at' => Carbon::now(),
+            'unpublished_at' => null
         ]);
         $model->blog__posts()->save($post);
         return $post;
