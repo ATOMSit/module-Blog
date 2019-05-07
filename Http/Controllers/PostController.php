@@ -3,6 +3,8 @@
 namespace Modules\Blog\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Plugin;
+use App\Website;
 use Carbon\Carbon;
 use Igaster\LaravelTheme\Theme;
 use Illuminate\Support\Facades\Auth;
@@ -15,9 +17,15 @@ use Illuminate\Http\Response;
 use Modules\Blog\Repositories\PostRepositoryInterface;
 use Yajra\DataTables\Facades\DataTables;
 use Yajra\DataTables\Html\Builder;
+use Illuminate\Support\Facades\Route;
 
 class PostController extends Controller
 {
+    /**
+     * @var string
+     */
+    protected $default_lang;
+
     /**
      * @var PostRepositoryInterface
      */
@@ -31,6 +39,7 @@ class PostController extends Controller
     public function __construct(PostRepositoryInterface $post)
     {
         $this->post = $post;
+        $this->default_lang = "en";
         $this->middleware('auth', ['except' => ['show', 'datatable']]);
     }
 
@@ -45,8 +54,11 @@ class PostController extends Controller
         foreach ($array as $item) {
             $datatable->addColumn($item, function (Post $post) use ($item) {
                 app()->setLocale($item);
+                $route = route('blog.admin.post.translation.edit', ['id' => $post->id, 'lang' => $item]);
                 if (strlen($post->title) === 0) {
-                    return '<span class="flaticon2-close-cross"></span>';
+                    return '<a href="'.$route.'"><span class="flaticon2-close-cross" style="font-size: 25px"></span></a>';
+                } else {
+                    return '<a href="'.$route.'"><span class="flaticon2-checkmark" style="font-size: 25px"></span></a>';
                 }
                 return $post->title;
             });
@@ -149,7 +161,7 @@ class PostController extends Controller
         $this->authorize('create', Post::class);
         $form = $formBuilder->create(PostForm::class, [
             'method' => 'POST',
-            'url' => route('blog . admin . post . store')
+            'url' => route('blog.admin.post.store')
         ]);
         $form->modify('online', 'select', [
             'selected' => [1],
@@ -157,7 +169,7 @@ class PostController extends Controller
         $form->modify('indexable', 'select', [
             'selected' => [1],
         ]);
-        return view('blog::application . posts . post')
+        return view('blog::application.posts.post')
             ->with('form_post', $form);
     }
 
@@ -189,20 +201,48 @@ class PostController extends Controller
      *
      * @param FormBuilder $formBuilder
      * @param int $id
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @param string|null $lang
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function edit(FormBuilder $formBuilder, int $id)
+    public function edit(FormBuilder $formBuilder, int $id, string $lang = null)
     {
-        $post = $this->post->find($id);
-        $this->authorize('update', $post);
-        $form = $formBuilder->create(PostForm::class, [
-            'method' => 'POST',
-            'url' => route('blog.admin.post.update', ['id' => $id]),
-            'model' => $post
-        ]);
+        // Dans un premier temps nous determinons si et seulement si il sagit d'une langue déjà connu
+        $route = Route::currentRouteName();
+        if ($route === "blog.admin.post.edit") {
+            app()->setLocale($this->default_lang);
+            $post = $this->post->find($id);
+            $this->authorize('update', $post);
+            $form = $formBuilder->create(PostForm::class, [
+                'method' => 'POST',
+                'url' => route('blog.admin.post.update', ['id' => $id]),
+                'model' => $post
+            ]);
+        } elseif ($route === "blog.admin.post.translation.edit") {
+            // Recuperation du site
+            $website = app(\Hyn\Tenancy\Environment::class)->tenant();
+            $plugin = Plugin::query()->where('name', 'translation')->first();
+            $website->plugins()->sync($plugin);
+            $exists = $website->plugins->contains($plugin->id);
+            if ($exists === true) {
+                if ($lang !== null) {
+                    app()->setLocale($lang);
+                    $post = $this->post->find($id);
+                    $this->authorize('update', $post);
+                    $form = $formBuilder->create(PostForm::class, [
+                        'method' => 'POST',
+                        'url' => route('blog.admin.post.translation.update', ['id' => $id, 'lang' => $lang]),
+                        'model' => $post
+                    ]);
+                }
+            } else {
+                $post = $this->post->find($id);
+                return redirect()->route("blog.admin.post.edit", ['id' => $post->id]);
+            }
+        }
         return view('blog::application.posts.post')
             ->with('post', $post)
+            ->with('lang', $lang)
             ->with('form_post', $form);
     }
 
@@ -214,20 +254,38 @@ class PostController extends Controller
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function update(PostRequest $request, int $id)
+    public function update(PostRequest $request, int $id, string $lang = null)
     {
-        $post = $this->post->find($id);
-        $this->authorize('update', $post);
-        DB::beginTransaction();
-        try {
-            $this->post->update($id, $request->all());
-            DB::commit();
-        } catch (\Exception $ex) {
-            DB::rollback();
-            return response()->json(['error' => $ex->getMessage()], 500);
+        $route = Route::currentRouteName();
+        if ($route === "blog.admin.post.update") {
+            $post = $this->post->find($id);
+            $this->authorize('update', $post);
+            DB::beginTransaction();
+            try {
+                app()->setLocale($this->default_lang);
+                $this->post->update($id, $request->all());
+                DB::commit();
+            } catch (\Exception $ex) {
+                DB::rollback();
+                return response()->json(['error' => $ex->getMessage()], 500);
+            }
+            return back()
+                ->with('success', "Profile mis à jour");
+        } elseif ($route === "blog.admin.post.translation.update") {
+            $post = $this->post->find($id);
+            $this->authorize('update', $post);
+            DB::beginTransaction();
+            try {
+                app()->setLocale($lang);
+                $this->post->update($id, $request->all());
+                DB::commit();
+            } catch (\Exception $ex) {
+                DB::rollback();
+                return response()->json(['error' => $ex->getMessage()], 500);
+            }
+            return back()
+                ->with('success', "Profile mis à jour");
         }
-        return back()
-            ->with('success', "Profile mis à jour");
     }
 
     /**

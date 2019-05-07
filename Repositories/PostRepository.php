@@ -19,7 +19,7 @@ class PostRepository implements PostRepositoryInterface
      */
     public function find(int $post_id)
     {
-        return Post::query()
+        return $post = Post::query()
             ->findOrFail($post_id);
     }
 
@@ -70,12 +70,12 @@ class PostRepository implements PostRepositoryInterface
         $post = $this->find($post_id);
         $post->update([
             'title' => $post_data['title'],
-            'slug' => $post_data['slug'],
+            'slug' => "test",
             'body' => $post_data['body'],
             'online' => $post_data['online'],
             'indexable' => $post_data['indexable'],
-            'published_at' => $post_data['published_at'],
-            'unpublished_at' => $post_data['unpublished_at']
+            'published_at' => Carbon::now(),
+            'unpublished_at' => null
         ]);
         return $post;
     }

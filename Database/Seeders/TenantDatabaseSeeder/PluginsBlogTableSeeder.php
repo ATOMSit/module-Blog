@@ -17,6 +17,7 @@ class PluginsBlogTableSeeder extends Seeder
     {
         $plugins = array(
             array("name" => "blog", "price" => 00.00),
+            array("name" => "translation", "price" => 4.99)
         );
         foreach ($plugins as $plugin) {
             $db = Plugin::query()

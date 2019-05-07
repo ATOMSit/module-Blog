@@ -11,7 +11,7 @@
 |
 */
 
-Route::prefix('posts')->as('post.')->group(function() {
+Route::prefix('posts')->as('post.')->group(function () {
     Route::get('datatable', 'PostController@datatable')
         ->name('datatable');
     Route::get('index', 'PostController@index')
@@ -26,4 +26,12 @@ Route::prefix('posts')->as('post.')->group(function() {
         ->name('update');
     Route::delete('destroy/{id}', 'PostController@destroy')
         ->name('destroy');
+
+    Route::prefix('translations')->as('translation.')->group(function () {
+        Route::get('/edit/{id}/{lang}', 'PostController@edit')
+            ->name('edit');
+
+        Route::post('/update/{id}/{lang}', 'PostController@update')
+            ->name('update');
+    });
 });

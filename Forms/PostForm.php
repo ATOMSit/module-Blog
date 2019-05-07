@@ -13,12 +13,10 @@ class PostForm extends Form
     {
         $this
             ->add('title', Field::TEXT, [
-                'rules' => 'required|min:3|max:250',
-                'value' => "frfr"
+                'rules' => 'required|min:3|max:250'
             ])
             ->add('body', Field::TEXTAREA, [
-                'rules' => 'required|min:3|max:250000',
-                'value' => "frfr"
+                'rules' => 'required|min:3|max:250000'
             ])
             ->add('online', Field::SELECT, [
                 'choices' => [1 => 'Oui', 0 => 'Non'],

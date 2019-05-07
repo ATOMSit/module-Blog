@@ -13,7 +13,8 @@
 @endpush
 
 @push('scripts')
-    <script src="{{asset('application/app/custom/general/crud/forms/widgets/bootstrap-datepicker.js')}}" type="text/javascript"></script>
+    <script src="{{asset('application/app/custom/general/crud/forms/widgets/bootstrap-datepicker.js')}}"
+            type="text/javascript"></script>
     <script type="application/javascript">
         var KTWizard1 = function () {
             "use strict";
@@ -72,7 +73,10 @@
         };
         var KTBootstrapDatepicker = function () {
             var t;
-            t = KTUtil.isRTL() ? {leftArrow: '<i class="la la-angle-right"></i>', rightArrow: '<i class="la la-angle-left"></i>'} : {
+            t = KTUtil.isRTL() ? {
+                leftArrow: '<i class="la la-angle-right"></i>',
+                rightArrow: '<i class="la la-angle-left"></i>'
+            } : {
                 leftArrow: '<i class="la la-angle-left"></i>',
                 rightArrow: '<i class="la la-angle-right"></i>'
             };
@@ -96,13 +100,34 @@
 @endpush
 
 @section('content')
+    @widget('AdvicesWidget', ['plugin' => 'blog'])
+
+    @isset($lang)
+        @if($lang === null)
+            lang null
+        @else
+            <div class="alert alert-light alert-elevate fade show" role="alert">
+                <div class="alert-icon"><span class="flag-icon flag-icon-{{$lang}}" style="font-size: 35px"></span ></div>
+                <div class="alert-text">
+                    Vous editer la traduction Française de votre article
+                </div>
+                <div class="alert-close">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true"><i class="la la-close"></i></span>
+                    </button>
+                </div>
+            </div>
+        @endif
+    @endisset
+
     <div class="kt-portlet">
         <div class="kt-portlet__body kt-portlet__body--fit">
             <div class="kt-grid  kt-wizard-v1 kt-wizard-v1--white" id="kt_wizard_v1" data-ktwizard-state="step-first">
                 <div class="kt-grid__item">
                     <div class="kt-wizard-v1__nav">
                         <div class="kt-wizard-v1__nav-items">
-                            <a class="kt-wizard-v1__nav-item" href="#" data-ktwizard-type="step" data-ktwizard-state="current">
+                            <a class="kt-wizard-v1__nav-item" href="#" data-ktwizard-type="step"
+                               data-ktwizard-state="current">
                                 <div class="kt-wizard-v1__nav-body">
                                     <div class="kt-wizard-v1__nav-icon">
                                         <i class="flaticon2-crisp-icons"></i>
@@ -197,13 +222,17 @@
                         </div>
                     </div>
                     <div class="kt-form__actions">
-                        <div class="btn btn-secondary btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-prev">
+                        <div class="btn btn-secondary btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u"
+                             data-ktwizard-type="action-prev">
                             Précedent
                         </div>
-                        <button type="submit" class="btn btn-success btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-submit">
+                        <button type="submit"
+                                class="btn btn-success btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u"
+                                data-ktwizard-type="action-submit">
                             Valider
                         </button>
-                        <div class="btn btn-brand btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-next">
+                        <div class="btn btn-brand btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u"
+                             data-ktwizard-type="action-next">
                             Suivant
                         </div>
                     </div>
