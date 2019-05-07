@@ -24,4 +24,6 @@ Route::prefix('posts')->as('post.')->group(function() {
         ->name('edit');
     Route::post('update/{id}', 'PostController@update')
         ->name('update');
+    Route::delete('destroy/{id}', 'PostController@destroy')
+        ->name('destroy');
 });

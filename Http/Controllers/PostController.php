@@ -4,6 +4,7 @@ namespace Modules\Blog\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Igaster\LaravelTheme\Theme;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Kris\LaravelFormBuilder\FormBuilder;
@@ -35,7 +36,7 @@ class PostController extends Controller
 
     public function datatable()
     {
-        $array = array("fr", "en");
+        $array = array("fr", "en", "de", "es");
         $default_lang = "en";
         $array = \array_diff($array, [$default_lang]);
         $model = Post::query();
@@ -67,16 +68,20 @@ class PostController extends Controller
                 }
             })
             ->addColumn('action', function (Post $post) {
+                $url_edit = route('blog.admin.post.edit', ['id' => $post->id]);
+                $url_destroy = route('blog.admin.post.destroy', ['id' => $post->id]);
+
                 return '
                             <a href="#" class="btn btn-sm btn-clean btn-icon btn-icon-md" data-toggle="dropdown" aria-expanded="false">
                               <i class="la la-ellipsis-h"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right" x-placement="bottom-end" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-32px, 27px, 0px);">
-                                <a class="dropdown-item" href="/admin/blog/edit/' . $post->id . '"><i class="la la-edit"></i> Edit Details</a>
-                                <a class="dropdown-item" href="#"><i class="la la-leaf"></i> Update Status</a>
-                                <a class="dropdown-item" href="#"><i class="la la-print"></i> Generate Report</a>
-                            </div>
-                        ';
+                                <a class="dropdown-item" href="' . $url_edit . '"><i class="la la - edit"></i> Modifier</a>
+                            </div >
+                            <a href = "' . $url_edit . '" class="btn btn-sm btn-clean btn-icon btn-icon-md" title = "View" >
+                                <i class="la la-edit" ></i >
+                            </a >
+                ';
             })
             ->rawColumns($rowColumns)
             ->addIndexColumn()
@@ -90,7 +95,7 @@ class PostController extends Controller
      */
     public function index(Builder $builder)
     {
-        $array = ["fr", "en"];
+        $array = ["fr", "en", "de", "es"];
         $default_lang = "en";
         $array = \array_diff($array, [$default_lang]);
         if (request()->ajax()) {
@@ -102,12 +107,12 @@ class PostController extends Controller
         ]);
         foreach ($array as $item) {
             $html->addColumn([
-                'data' => $item, 'name' => $item, 'title' => $item
+                'data' => $item, 'name' => $item, 'title' => '<span class="flag-icon flag-icon-' . $item . '" ></span >'
             ]);
         }
         foreach ($default_columns as $default_column) {
             $html->addColumn([
-                'data' => $default_column, 'name' => $default_column, 'title' => $default_column
+                'data' => $default_column, 'name' => $default_column,
             ]);
         }
         $builder->ajax(route('blog.admin.post.datatable'));
@@ -144,7 +149,7 @@ class PostController extends Controller
         $this->authorize('create', Post::class);
         $form = $formBuilder->create(PostForm::class, [
             'method' => 'POST',
-            'url' => route('blog.admin.post.store')
+            'url' => route('blog . admin . post . store')
         ]);
         $form->modify('online', 'select', [
             'selected' => [1],
@@ -152,7 +157,7 @@ class PostController extends Controller
         $form->modify('indexable', 'select', [
             'selected' => [1],
         ]);
-        return view('blog::application.posts.post')
+        return view('blog::application . posts . post')
             ->with('form_post', $form);
     }
 
@@ -197,6 +202,7 @@ class PostController extends Controller
             'model' => $post
         ]);
         return view('blog::application.posts.post')
+            ->with('post', $post)
             ->with('form_post', $form);
     }
 

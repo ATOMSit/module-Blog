@@ -10,8 +10,15 @@
     <script src="{{asset('application/cropper/cropper.js')}}"></script>
     <script>
         window.addEventListener('DOMContentLoaded', function () {
+
+
             var div_picture = document.getElementById("media_picture");
+
             var button_cancel = document.getElementById("media_cancel");
+            var button_restore= document.getElementById("media_restore");
+            var button_delete = document.getElementById("media_delete");
+
+
             var widht = "1";
             var height = "1";
             var image = document.querySelector('#cropper_image');
@@ -46,6 +53,10 @@
                 button_cancel.style.display = "none";
                 document.getElementById("file").value = "";
             });
+            $("#media_delete").on("click", function () {
+                div_picture.style.display = "none";
+                button_cancel.style.display = "none";
+            });
         });
     </script>
 @endpush
@@ -53,6 +64,8 @@
 {!! form_row($form_post->file) !!}
 
 <div class="kt-wizard-v1__form">
+
+
     <div class="row justify-content-center" id="media_picture" style="display: none">
         <div class="col-xl-8">
             <div class="form-group">
@@ -67,9 +80,22 @@
             {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
         </div>
     </div>
+
+
+
     <div class="row justify-content-center">
-        <button type="button" id="media_cancel" class="btn btn-danger" style="display: none">
+        <button type="button" id="media_cancel" class="btn btn-danger btn-pill" style="display: none">
             Annuler
         </button>
+        &nbsp;
+        <button type="button" id="media_restore" class="btn btn-primary btn-pill" style="display: none">
+            Restaurer
+        </button>
+        &nbsp;
+        <button type="button" id="media_delete" class="btn btn-warning btn-pill" style="display: none">
+            Supprimer
+        </button>
     </div>
+
+
 </div>

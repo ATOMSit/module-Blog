@@ -4,6 +4,10 @@
     Création d'un article
 @endsection
 
+@section('breadcrumbs')
+    {{ Breadcrumbs::render('blog.admin.post.create') }}
+@endsection
+
 @push('styles')
     <link href="{{asset('application/app/custom/wizard/wizard-v1.default.css')}}" rel="stylesheet" type="text/css"/>
 @endpush
@@ -41,7 +45,7 @@
                                 success: function () {
                                     KTUtil.scrollTop(), swal.fire({
                                         allowOutsideClick: false,
-                                        title: "Féléicitation !",
+                                        title: "Félécitation !",
                                         text: "Votre article a bien était publié",
                                         type: "success",
                                         confirmButtonClass: "btn btn-focus--pill--air",
