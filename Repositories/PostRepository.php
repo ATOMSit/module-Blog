@@ -42,9 +42,6 @@ class PostRepository implements PostRepositoryInterface
      */
     public function store(Model $model, array $post_data)
     {
-        if ($post_data['unpublished_at'] == null) {
-            $unpublished_at = Carbon::now();
-        }
         $post = new Post([
             'title' => $post_data['title'],
             'slug' => "test",

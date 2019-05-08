@@ -56,9 +56,9 @@ class PostController extends Controller
                 app()->setLocale($item);
                 $route = route('blog.admin.post.translation.edit', ['id' => $post->id, 'lang' => $item]);
                 if (strlen($post->title) === 0) {
-                    return '<a href="'.$route.'"><span class="flaticon2-close-cross" style="font-size: 25px"></span></a>';
+                    return '<a href="' . $route . '"><span class="flaticon2-close-cross" style="font-size: 25px"></span></a>';
                 } else {
-                    return '<a href="'.$route.'"><span class="flaticon2-checkmark" style="font-size: 25px"></span></a>';
+                    return '<a href="' . $route . '"><span class="flaticon2-checkmark" style="font-size: 25px"></span></a>';
                 }
                 return $post->title;
             });
@@ -264,6 +264,14 @@ class PostController extends Controller
             try {
                 app()->setLocale($this->default_lang);
                 $this->post->update($id, $request->all());
+                if ($request->file('file') !== null) {
+                    $width = $request->get('picture')['width'];
+                    $height = $request->get('picture')['height'];
+                    $x = $request->get('picture')['x'];
+                    $y = $request->get('picture')['y'];
+                    $post->addMedia($request->file('file'))
+                        ->toMediaCollection('cover');
+                }
                 DB::commit();
             } catch (\Exception $ex) {
                 DB::rollback();
@@ -278,6 +286,14 @@ class PostController extends Controller
             try {
                 app()->setLocale($lang);
                 $this->post->update($id, $request->all());
+                if ($request->file('file') !== null) {
+                    $width = $request->get('picture')['width'];
+                    $height = $request->get('picture')['height'];
+                    $x = $request->get('picture')['x'];
+                    $y = $request->get('picture')['y'];
+                    $post->addMedia($request->file('file'))
+                        ->toMediaCollection('cover');
+                }
                 DB::commit();
             } catch (\Exception $ex) {
                 DB::rollback();
