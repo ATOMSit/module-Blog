@@ -15,6 +15,7 @@
         var button_media_add = document.getElementById("button_media_add");
         var button_media_cancel = document.getElementById("button_media_cancel");
         var button_media_delete = document.getElementById("button_media_delete");
+        var button_media_restore = document.getElementById("button_media_restore");
 
         var media_delete = false;
 
@@ -34,7 +35,7 @@
 
         function show_cropper() {
             div_media_picture.style.display = "flex";
-            button_media_add.firstChild.data = "Modifier l'image";
+            button_media_add.firstChild.data = "MODIFIER L'IMAGE";
             button_media_add.style.display = 'flex';
             button_media_cancel.style.display = 'flex';
         }
@@ -46,25 +47,27 @@
                 div_media_picture.style.display = "none";
                 div_media_picture_present.style.display = "none";
 
-                button_media_add.firstChild.data = "Ajouter un media";
+                button_media_add.firstChild.data = "AJOUTER UN MEDIA";
                 button_media_add.style.display = 'flex';
                 button_media_cancel.style.display = 'none';
                 button_media_delete.style.display = 'none';
+                button_media_restore.style.display = 'flex';
             } else {
                 // Si la personne n'a pas encore supprimé le média présent
                 if ($("#media_picture_present").length !== 0) {
                     div_media_picture.style.display = "none";
                     div_media_picture_present.style.display = "flex";
 
-                    button_media_add.firstChild.data = "Ajouter un media";
+                    button_media_add.firstChild.data = "AJOUTER UN MEDIA";
                     button_media_add.style.display = 'none';
                     button_media_cancel.style.display = 'none';
                     button_media_delete.style.display = 'flex';
+                    button_media_restore.style.display = 'none';
                 } else {
                     // Si c'est pour une création
                     file_input_null();
                     div_media_picture.style.display = "none";
-                    button_media_add.firstChild.data = "Ajouter un media";
+                    button_media_add.firstChild.data = "AJOUTER UN MEDIA";
                     button_media_add.style.display = 'flex';
                     button_media_cancel.style.display = 'none';
                 }
@@ -72,7 +75,7 @@
         }
 
         function transition_media_change() {
-            if (document.getElementById("button_media_add").firstChild.data === "Modifier l'image") {
+            if (document.getElementById("button_media_add").firstChild.data === "MODIFIER L'IMAGE") {
                 document.getElementById("media_picture").style.display = "flex";
                 document.getElementById("button_media_cancel").style.display = "none";
             } else {
@@ -94,6 +97,11 @@
             change_delete_statut();
             noshow_cropper();
         }
+
+        function restore_media() {
+            change_delete_statut();
+            noshow_cropper();
+        }
     </script>
 
     <script type="application/javascript">
@@ -104,10 +112,7 @@
         var _URL = window.URL || window.webkitURL;
         $(document).ready(function () {
             // Si une image est presente alors
-
             noshow_cropper();
-
-
             $("#input_cropper").change(function (e) {
                 transition_media_change();
                 if (file = this.files[0]) {
@@ -153,82 +158,80 @@
     </script>
 @endpush
 
-{!! form_row($form_post->input_cropper,$options=['label_show'=>false,'attr'=>['id'=>'input_cropper']]) !!}
+<div class="kt-wizard-v1__content" data-ktwizard-type="step-content">
+    <div class="kt-heading kt-heading--md">
+        Ajouter une image d'illustration de votre article
+    </div>
+    {!! form_row($form_post->picture->x,$options=['label_show'=>false,'attr'=>['id'=>'picture[x]']]) !!}
+    {!! form_row($form_post->picture->y,$options=['label_show'=>false,'attr'=>['id'=>'picture[y]']]) !!}
+    {!! form_row($form_post->picture->width,$options=['label_show'=>false,'attr'=>['id'=>'picture[width]']]) !!}
+    {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
+    <div class="kt-form__section kt-form__section--first">
+        {!! form_row($form_post->input_cropper,$options=['label_show'=>false,'attr'=>['id'=>'input_cropper']]) !!}
+        <div class="kt-wizard-v1__form">
+            @if(isset($post) and $post->getFirstMedia('cover') !== null)
+                @if(strpos($post->getFirstMedia('cover')->mime_type, 'image') !== false)
+                    <div class="row justify-content-center" id="media_picture_present" style="display: flex">
+                        <div class="col-xl-12">
+                            {{$post->getFirstMedia('cover')}}
+                        </div>
+                    </div>
+                    {!! form_row($form_post->input_media_delete,$options=['label_show'=>false,'attr'=>['id'=>'input_media_delete']]) !!}
+                    <div class="row justify-content-center" id="media_picture" style="display: none">
+                        <div class="col-xl-8">
+                            <div class="form-group">
+                                <img id="cropper_image" src="" alt="Picture"
+                                     style="width: 640px; height: 288px; transform: none;">
+                            </div>
+                        </div>
 
-<div class="kt-wizard-v1__form">
-    @if(isset($post) and $post->getFirstMedia('cover') !== null)
-        @if(strpos($post->getFirstMedia('cover')->mime_type, 'image') !== false)
-            <div class="row justify-content-center" id="media_picture_present" style="display: flex">
-                <div class="col-xl-12">
-                    {{$post->getFirstMedia('cover')}}
-                </div>
-            </div>
-            {!! form_row($form_post->input_media_delete,$options=['label_show'=>false,'attr'=>['id'=>'input_media_delete']]) !!}
-            <div class="row justify-content-center" id="media_picture" style="display: none">
-                <div class="col-xl-8">
-                    <div class="form-group">
-                        <img id="cropper_image" src="" alt="Picture"
-                             style="width: 640px; height: 288px; transform: none;">
+                    </div>
+                @else
+                    <div class="row justify-content-center" id="media_picture" style="display: none">
+                        <div class="col-xl-8">
+                            <div class="form-group">
+                                <img id="cropper_image" src="" alt="Picture"
+                                     style="width: 640px; height: 288px; transform: none;">
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @else
+                <div class="row justify-content-center" id="media_picture" style="display: none">
+                    <div class="col-xl-8">
+                        <div class="form-group">
+                            <img id="cropper_image" src="" alt="Picture"
+                                 style="width: 640px; height: 288px; transform: none;">
+                        </div>
                     </div>
                 </div>
-                <div class="col-xl-4">
-                    {!! form_row($form_post->picture->x,$options=['label_show'=>false,'attr'=>['id'=>'picture[x]']]) !!}
-                    {!! form_row($form_post->picture->y,$options=['label_show'=>false,'attr'=>['id'=>'picture[y]']]) !!}
-                    {!! form_row($form_post->picture->width,$options=['label_show'=>false,'attr'=>['id'=>'picture[width]']]) !!}
-                    {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
-                </div>
-            </div>
-        @else
-            <div class="row justify-content-center" id="media_picture" style="display: none">
-                <div class="col-xl-8">
-                    <div class="form-group">
-                        <img id="cropper_image" src="" alt="Picture"
-                             style="width: 640px; height: 288px; transform: none;">
-                    </div>
-                </div>
-                <div class="col-xl-4">
-                    {!! form_row($form_post->picture->x,$options=['label_show'=>false,'attr'=>['id'=>'picture[x]']]) !!}
-                    {!! form_row($form_post->picture->y,$options=['label_show'=>false,'attr'=>['id'=>'picture[y]']]) !!}
-                    {!! form_row($form_post->picture->width,$options=['label_show'=>false,'attr'=>['id'=>'picture[width]']]) !!}
-                    {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
-                </div>
-            </div>
-        @endif
-    @else
-        <div class="row justify-content-center" id="media_picture" style="display: none">
-            <div class="col-xl-8">
-                <div class="form-group">
-                    <img id="cropper_image" src="" alt="Picture"
-                         style="width: 640px; height: 288px; transform: none;">
-                </div>
-            </div>
-            <div class="col-xl-4">
-                {!! form_row($form_post->picture->x,$options=['label_show'=>false,'attr'=>['id'=>'picture[x]']]) !!}
-                {!! form_row($form_post->picture->y,$options=['label_show'=>false,'attr'=>['id'=>'picture[y]']]) !!}
-                {!! form_row($form_post->picture->width,$options=['label_show'=>false,'attr'=>['id'=>'picture[width]']]) !!}
-                {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
+            @endif
+
+            <div class="row justify-content-center">
+                <button type="button" id="button_media_add" onclick="add_media()"
+                        class="btn btn-font-lg  btn-md btn-primary btn-pill"
+                        style="display: flex">
+                    AJOUTER UN MEDIA
+                </button>
+                &nbsp;
+                <button type="button" id="button_media_cancel" onclick="cancel_media()"
+                        class="btn bbtn-font-lg btn-md btn-danger btn-pill"
+                        style="display: none">
+                    ANNULER
+                </button>
+                &nbsp;
+                <button type="button" id="button_media_delete" onclick="delete_media()"
+                        class="btn bbtn-font-lg btn-md btn-danger btn-pill"
+                        style="display: none">
+                    SUPPRIMER
+                </button>
+                &nbsp;
+                <button type="button" id="button_media_restore" onclick="restore_media()"
+                        class="btn btn-font-lg btn-md btn-warning btn-pill"
+                        style="display: none">
+                    RESTORER
+                </button>
             </div>
         </div>
-    @endif
-
-
-    <div class="row justify-content-center">
-        <button type="button" id="button_media_add" onclick="add_media()"
-                class="btn btn-font-lg  btn-md btn-primary btn-pill"
-                style="display: flex">
-            Ajouter un media
-        </button>
-        &nbsp;
-        <button type="button" id="button_media_cancel" onclick="cancel_media()"
-                class="btn btn-font-md btn-md btn-danger btn-pill"
-                style="display: none">
-            Annuler
-        </button>
-        &nbsp;
-        <button type="button" id="button_media_delete" onclick="delete_media()"
-                class="btn btn-font-md btn-md btn-danger btn-pill"
-                style="display: none">
-            Supprimer
-        </button>
     </div>
 </div>

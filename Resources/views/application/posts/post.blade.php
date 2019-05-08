@@ -107,7 +107,7 @@
             lang null
         @else
             <div class="alert alert-light alert-elevate fade show" role="alert">
-                <div class="alert-icon"><span class="flag-icon flag-icon-{{$lang}}" style="font-size: 35px"></span ></div>
+                <div class="alert-icon"><span class="flag-icon flag-icon-{{$lang}}" style="font-size: 35px"></span></div>
                 <div class="alert-text">
                     Vous editer la traduction Française de votre article
                 </div>
@@ -213,14 +213,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="kt-wizard-v1__content" data-ktwizard-type="step-content">
-                        <div class="kt-heading kt-heading--md">
-                            Ajouter du contenu pertinent a votre article
-                        </div>
-                        <div class="kt-form__section kt-form__section--first">
-                            @include('blog::application.posts.components.media_form')
-                        </div>
-                    </div>
+                    @includeIf("blog::application.posts.components.media_form")
                     <div class="kt-form__actions">
                         <div class="btn btn-secondary btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u"
                              data-ktwizard-type="action-prev">
