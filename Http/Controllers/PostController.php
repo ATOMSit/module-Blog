@@ -184,12 +184,12 @@ class PostController extends Controller
     {
         $this->authorize('create', Post::class);
         $post = $this->post->store(Auth::user(), $request->all());
-        if ($request->file('file') !== null) {
+        if ($request->file('input_cropper') !== null) {
             $width = $request->get('picture')['width'];
             $height = $request->get('picture')['height'];
             $x = $request->get('picture')['x'];
             $y = $request->get('picture')['y'];
-            $post->addMedia($request->file('file'))
+            $post->addMedia($request->file('input_cropper'))
                 ->toMediaCollection('cover');
         }
         return back()
@@ -218,6 +218,10 @@ class PostController extends Controller
                 'url' => route('blog.admin.post.update', ['id' => $id]),
                 'model' => $post
             ]);
+            $form->add('input_media_delete', 'checkbox', [
+                'value' => 1,
+                'checked' => false
+            ]);
         } elseif ($route === "blog.admin.post.translation.edit") {
             // Recuperation du site
             $website = app(\Hyn\Tenancy\Environment::class)->tenant();
@@ -233,6 +237,10 @@ class PostController extends Controller
                         'method' => 'POST',
                         'url' => route('blog.admin.post.translation.update', ['id' => $id, 'lang' => $lang]),
                         'model' => $post
+                    ]);
+                    $form->add('input_media_delete', 'checkbox', [
+                        'value' => 1,
+                        'checked' => false
                     ]);
                 }
             } else {
@@ -264,12 +272,12 @@ class PostController extends Controller
             try {
                 app()->setLocale($this->default_lang);
                 $this->post->update($id, $request->all());
-                if ($request->file('file') !== null) {
+                if ($request->file('input_cropper') !== null) {
                     $width = $request->get('picture')['width'];
                     $height = $request->get('picture')['height'];
                     $x = $request->get('picture')['x'];
                     $y = $request->get('picture')['y'];
-                    $post->addMedia($request->file('file'))
+                    $post->addMedia($request->file('input_cropper'))
                         ->toMediaCollection('cover');
                 }
                 DB::commit();

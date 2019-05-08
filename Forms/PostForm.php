@@ -40,7 +40,7 @@ class PostForm extends Form
             ->add('unpublished_at_time', Field::TEXT, [
                 'rules' => 'nullable'
             ])
-            ->add('file', Field::FILE, [
+            ->add('input_cropper', Field::FILE, [
             ])
             ->add('picture', 'form', [
                 'class' => $this->formBuilder->create(PictureForm::class)

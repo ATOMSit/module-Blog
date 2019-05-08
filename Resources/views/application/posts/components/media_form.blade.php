@@ -8,124 +8,198 @@
 
 @push('scripts')
     <script src="{{asset('application/cropper/cropper.js')}}"></script>
-    <script>
-        window.addEventListener('DOMContentLoaded', function () {
+    <script type="application/javascript">
+        var div_media_picture = document.getElementById("media_picture");
+        var div_media_picture_present = document.getElementById("media_picture_present");
 
+        var button_media_add = document.getElementById("button_media_add");
+        var button_media_cancel = document.getElementById("button_media_cancel");
+        var button_media_delete = document.getElementById("button_media_delete");
 
-            var div_picture = document.getElementById("media_picture");
-            var dic_picture_present = document.getElementById("media_present");
+        var media_delete = false;
 
-            var button_cancel = document.getElementById("media_cancel");
-            var button_restore = document.getElementById("media_restore");
-            var button_delete = document.getElementById("media_delete");
+        function file_input_null() {
+            document.getElementById("input_cropper").value = "";
+        }
 
-
-            if (dic_picture_present.style.display === "flex") {
-                div_picture.style.display = 'none';
-                dic_picture_present.display = 'flex';
-
-                button_cancel.style.display = 'none';
-                button_delete.style.display = 'flex';
+        function change_delete_statut() {
+            if (document.getElementById("input_media_delete").checked === true) {
+                media_delete = false;
+                document.getElementById("input_media_delete").checked = false;
+            } else {
+                media_delete = true;
+                document.getElementById("input_media_delete").checked = true;
             }
+        }
 
-            $("#media_delete").on("click", function () {
-                div_picture.style.display = 'none';
-                dic_picture_present.style.display = 'none';
+        function show_cropper() {
+            div_media_picture.style.display = "flex";
+            button_media_add.firstChild.data = "Modifier l'image";
+            button_media_add.style.display = 'flex';
+            button_media_cancel.style.display = 'flex';
+        }
 
-                button_cancel.style.display = 'none';
-                button_restore.style.display = 'flex';
-                button_delete.style.display = 'none';
+        function noshow_cropper() {
+            // Si la personne a supprimer le media déjà present
+            if (media_delete === true) {
+                file_input_null();
+                div_media_picture.style.display = "none";
+                div_media_picture_present.style.display = "none";
+
+                button_media_add.firstChild.data = "Ajouter un media";
+                button_media_add.style.display = 'flex';
+                button_media_cancel.style.display = 'none';
+                button_media_delete.style.display = 'none';
+            } else {
+                // Si la personne n'a pas encore supprimé le média présent
+                if ($("#media_picture_present").length !== 0) {
+                    div_media_picture.style.display = "none";
+                    div_media_picture_present.style.display = "flex";
+
+                    button_media_add.firstChild.data = "Ajouter un media";
+                    button_media_add.style.display = 'none';
+                    button_media_cancel.style.display = 'none';
+                    button_media_delete.style.display = 'flex';
+                } else {
+                    // Si c'est pour une création
+                    file_input_null();
+                    div_media_picture.style.display = "none";
+                    button_media_add.firstChild.data = "Ajouter un media";
+                    button_media_add.style.display = 'flex';
+                    button_media_cancel.style.display = 'none';
+                }
+            }
+        }
+
+        function transition_media_change() {
+            if (document.getElementById("button_media_add").firstChild.data === "Modifier l'image") {
+                document.getElementById("media_picture").style.display = "flex";
+                document.getElementById("button_media_cancel").style.display = "none";
+            } else {
+                document.getElementById("media_picture").style.display = "none";
+                document.getElementById("button_media_cancel").style.display = "none";
+            }
+        }
+
+
+        function add_media() {
+            $(input_cropper).click();
+        }
+
+        function cancel_media() {
+            noshow_cropper();
+        }
+
+        function delete_media() {
+            change_delete_statut();
+            noshow_cropper();
+        }
+    </script>
+
+    <script type="application/javascript">
+        document.getElementById("input_cropper").style.display = "none";
+        var isInitialized = false;
+        var cropper = '';
+        var file = '';
+        var _URL = window.URL || window.webkitURL;
+        $(document).ready(function () {
+            // Si une image est presente alors
+
+            noshow_cropper();
+
+
+            $("#input_cropper").change(function (e) {
+                transition_media_change();
+                if (file = this.files[0]) {
+                    var oFReader = new FileReader();
+                    oFReader.readAsDataURL(file);
+                    oFReader.onload = function () {
+                        var cropper_image = $("#cropper_image");
+                        cropper_image.attr('src', this.result);
+                        cropper_image.addClass('ready');
+                        if (isInitialized === true) {
+                            cropper.destroy();
+                        }
+                        initCropper();
+                    }
+                }
             });
-            $("#media_restore").on("click", function () {
-                div_picture.style.display = 'none';
-                dic_picture_present.style.display = 'flex';
+        });
 
-                button_cancel.style.display = 'none';
-                button_restore.style.display = 'none';
-                button_delete.style.display = 'flex';
-            });
-
-
-            $("#media_cancel").on("click", function () {
-                div_picture.style.display = 'none';
-                dic_picture_present.style.display = 'none';
-
-                button_cancel.style.display = 'none';
-                button_restore.style.display = 'none';
-                button_delete.style.display = 'none';
-
-                document.getElementById("file").value = "";
-            });
-
-
-            var widht = "16";
-            var height = "9";
-            var image = document.querySelector('#cropper_image');
-            var cropper = new Cropper(image, {
+        function initCropper() {
+            var vEl = document.getElementById('cropper_image');
+            cropper = new Cropper(vEl, {
                 viewMode: 2,
-                aspectRatio: widht / height,
+                aspectRatio: 16 / 9,
+                minContainerWidth: 640,
+                minContainerHeight: 360,
+                maxContainerWidth: 640,
+                maxContainerHeight: 360,
                 crop(event) {
                     document.getElementById("picture[x]").value = (event.detail.x);
                     document.getElementById("picture[y]").value = (event.detail.y);
                     document.getElementById("picture[width]").value = (event.detail.width);
                     document.getElementById("picture[height]").value = (event.detail.height);
                 },
-            });
-            $('input[name="file"]').change(function (e) {
-                var file = e.target.files[0];
-                var type = e.target.files[0].type;
-                if (type.includes('image')) {
-                    var file = document.querySelector('input[name=file]').files[0];
-                    var reader = new FileReader();
-                    reader.addEventListener("load", function () {
-                        div_picture.style.display = 'flex';
-                        dic_picture_present.style.display = 'none';
-
-                        button_cancel.style.display = 'flex';
-                        button_restore.style.display = 'none';
-                        button_delete.style.display = 'none';
-
-
-                        cropper.replace(reader.result);
-                    }, false);
-                    if (file) {
-                        reader.readAsDataURL(file);
-                    }
+                ready: function (e) {
+                    var cropper = this.cropper;
+                    cropper.zoomTo(0);
+                    var imageData = cropper.getImageData();
+                    show_cropper();
                 }
             });
-        });
+            isInitialized = true;
+        }
     </script>
 @endpush
 
-{!! form_row($form_post->file) !!}
+{!! form_row($form_post->input_cropper,$options=['label_show'=>false,'attr'=>['id'=>'input_cropper']]) !!}
 
 <div class="kt-wizard-v1__form">
     @if(isset($post) and $post->getFirstMedia('cover') !== null)
-        <div class="row justify-content-center" id="media_present" style="display: flex">
-            <div class="col-xl-12">
-                <img src="{{asset($post->getFirstMedia('cover')->getUrl('thumb'))}}" alt="Picture">
-            </div>
-        </div>
-        <div class="row justify-content-center" id="media_picture" style="display: none">
-            <div class="col-xl-8">
-                <div class="form-group">
-                    <img id="cropper_image" src="{{asset('application/media/users/100_1.jpg')}}" alt="Picture"
-                         style="max-height: 300px;max-width: 300px;min-height: 300px;min-width: 300px">
+        @if(strpos($post->getFirstMedia('cover')->mime_type, 'image') !== false)
+            <div class="row justify-content-center" id="media_picture_present" style="display: flex">
+                <div class="col-xl-12">
+                    {{$post->getFirstMedia('cover')}}
                 </div>
             </div>
-            <div class="col-xl-4">
-                {!! form_row($form_post->picture->x,$options=['label_show'=>false,'attr'=>['id'=>'picture[x]']]) !!}
-                {!! form_row($form_post->picture->y,$options=['label_show'=>false,'attr'=>['id'=>'picture[y]']]) !!}
-                {!! form_row($form_post->picture->width,$options=['label_show'=>false,'attr'=>['id'=>'picture[width]']]) !!}
-                {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
+            {!! form_row($form_post->input_media_delete,$options=['label_show'=>false,'attr'=>['id'=>'input_media_delete']]) !!}
+            <div class="row justify-content-center" id="media_picture" style="display: none">
+                <div class="col-xl-8">
+                    <div class="form-group">
+                        <img id="cropper_image" src="" alt="Picture"
+                             style="width: 640px; height: 288px; transform: none;">
+                    </div>
+                </div>
+                <div class="col-xl-4">
+                    {!! form_row($form_post->picture->x,$options=['label_show'=>false,'attr'=>['id'=>'picture[x]']]) !!}
+                    {!! form_row($form_post->picture->y,$options=['label_show'=>false,'attr'=>['id'=>'picture[y]']]) !!}
+                    {!! form_row($form_post->picture->width,$options=['label_show'=>false,'attr'=>['id'=>'picture[width]']]) !!}
+                    {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
+                </div>
             </div>
-        </div>
+        @else
+            <div class="row justify-content-center" id="media_picture" style="display: none">
+                <div class="col-xl-8">
+                    <div class="form-group">
+                        <img id="cropper_image" src="" alt="Picture"
+                             style="width: 640px; height: 288px; transform: none;">
+                    </div>
+                </div>
+                <div class="col-xl-4">
+                    {!! form_row($form_post->picture->x,$options=['label_show'=>false,'attr'=>['id'=>'picture[x]']]) !!}
+                    {!! form_row($form_post->picture->y,$options=['label_show'=>false,'attr'=>['id'=>'picture[y]']]) !!}
+                    {!! form_row($form_post->picture->width,$options=['label_show'=>false,'attr'=>['id'=>'picture[width]']]) !!}
+                    {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
+                </div>
+            </div>
+        @endif
     @else
         <div class="row justify-content-center" id="media_picture" style="display: none">
             <div class="col-xl-8">
                 <div class="form-group">
-                    <img id="cropper_image" src="{{asset('application/media/users/100_1.jpg')}}" alt="Picture"
-                         style="max-height: 300px;max-width: 300px;min-height: 300px;min-width: 300px">
+                    <img id="cropper_image" src="" alt="Picture"
+                         style="width: 640px; height: 288px; transform: none;">
                 </div>
             </div>
             <div class="col-xl-4">
@@ -135,17 +209,25 @@
                 {!! form_row($form_post->picture->height,$options=['label_show'=>false,'attr'=>['id'=>'picture[height]']]) !!}
             </div>
         </div>
-    @endisset
+    @endif
+
+
     <div class="row justify-content-center">
-        <button type="button" id="media_cancel" class="btn btn-danger btn-pill" style="display: none">
+        <button type="button" id="button_media_add" onclick="add_media()"
+                class="btn btn-font-lg  btn-md btn-primary btn-pill"
+                style="display: flex">
+            Ajouter un media
+        </button>
+        &nbsp;
+        <button type="button" id="button_media_cancel" onclick="cancel_media()"
+                class="btn btn-font-md btn-md btn-danger btn-pill"
+                style="display: none">
             Annuler
         </button>
         &nbsp;
-        <button type="button" id="media_restore" class="btn btn-warning btn-pill" style="display: none">
-            Restaurer
-        </button>
-        &nbsp;
-        <button type="button" id="media_delete" class="btn btn-warning btn-pill" style="display: none">
+        <button type="button" id="button_media_delete" onclick="delete_media()"
+                class="btn btn-font-md btn-md btn-danger btn-pill"
+                style="display: none">
             Supprimer
         </button>
     </div>
