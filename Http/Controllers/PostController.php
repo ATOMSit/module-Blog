@@ -15,6 +15,8 @@ use Modules\Blog\Forms\PostForm;
 use Modules\Blog\Http\Requests\PostRequest;
 use Illuminate\Http\Response;
 use Modules\Blog\Repositories\PostRepositoryInterface;
+use Modules\SEOBasic\Forms\BasicForm;
+use Modules\SEOBasic\Http\Controllers\SEOBasicController;
 use Yajra\DataTables\Facades\DataTables;
 use Yajra\DataTables\Html\Builder;
 use Illuminate\Support\Facades\Route;
@@ -89,10 +91,12 @@ class PostController extends Controller
                             </a>
                             <div class="dropdown-menu dropdown-menu-right" x-placement="bottom-end" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-32px, 27px, 0px);">
                                 <a class="dropdown-item" href="' . $url_edit . '"><i class="la la - edit"></i> Modifier</a>
+                                <a class="dropdown-item" onclick="delete_post(' . $post->id . ')" href="#"><i class="la la - edit"></i> Supprimer</a>
                             </div >
                             <a href = "' . $url_edit . '" class="btn btn-sm btn-clean btn-icon btn-icon-md" title = "View" >
                                 <i class="la la-edit" ></i >
                             </a >
+                            
                 ';
             })
             ->rawColumns($rowColumns)
@@ -190,6 +194,9 @@ class PostController extends Controller
             $x = $request->get('picture')['x'];
             $y = $request->get('picture')['y'];
             $post->addMedia($request->file('input_cropper'))
+                ->withManipulations([
+                    'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
+                ])
                 ->toMediaCollection('cover');
         }
         return back()
@@ -212,42 +219,38 @@ class PostController extends Controller
         if ($route === "blog.admin.post.edit") {
             app()->setLocale($this->default_lang);
             $post = $this->post->find($id);
-            $this->authorize('update', $post);
-            $form = $formBuilder->create(PostForm::class, [
+            $formOptions = [
                 'method' => 'POST',
                 'url' => route('blog.admin.post.update', ['id' => $id]),
                 'model' => $post
-            ]);
-            $form->add('input_media_delete', 'checkbox', [
-                'value' => 1,
-                'checked' => false
-            ]);
+            ];
         } elseif ($route === "blog.admin.post.translation.edit") {
             // Recuperation du site
-            $website = app(\Hyn\Tenancy\Environment::class)->tenant();
-            $plugin = Plugin::query()->where('name', 'translation')->first();
-            $website->plugins()->sync($plugin);
-            $exists = $website->plugins->contains($plugin->id);
+            $exists = $website = app(\Hyn\Tenancy\Environment::class)->tenant()->plugin('translation');
             if ($exists === true) {
                 if ($lang !== null) {
                     app()->setLocale($lang);
                     $post = $this->post->find($id);
                     $this->authorize('update', $post);
-                    $form = $formBuilder->create(PostForm::class, [
+                    $formOptions = [
                         'method' => 'POST',
                         'url' => route('blog.admin.post.translation.update', ['id' => $id, 'lang' => $lang]),
                         'model' => $post
-                    ]);
-                    $form->add('input_media_delete', 'checkbox', [
-                        'value' => 1,
-                        'checked' => false
-                    ]);
+                    ];
+
                 }
             } else {
                 $post = $this->post->find($id);
                 return redirect()->route("blog.admin.post.edit", ['id' => $post->id]);
             }
         }
+        $this->authorize('update', $post);
+
+        $form = $formBuilder->create(PostForm::class, $formOptions);
+        $form->add('input_media_delete', 'checkbox', [
+            'value' => 1,
+            'checked' => false
+        ]);
         return view('blog::application.posts.post')
             ->with('post', $post)
             ->with('lang', $lang)
@@ -268,23 +271,25 @@ class PostController extends Controller
         if ($route === "blog.admin.post.update") {
             $post = $this->post->find($id);
             $this->authorize('update', $post);
-            DB::beginTransaction();
-            try {
-                app()->setLocale($this->default_lang);
-                $this->post->update($id, $request->all());
-                if ($request->file('input_cropper') !== null) {
-                    $width = $request->get('picture')['width'];
-                    $height = $request->get('picture')['height'];
-                    $x = $request->get('picture')['x'];
-                    $y = $request->get('picture')['y'];
-                    $post->addMedia($request->file('input_cropper'))
-                        ->toMediaCollection('cover');
-                }
-                DB::commit();
-            } catch (\Exception $ex) {
-                DB::rollback();
-                return response()->json(['error' => $ex->getMessage()], 500);
+
+            app()->setLocale($this->default_lang);
+            $this->post->update($id, $request->all());
+            if ($request->get('input_media_delete') == 1) {
+                $post->clearMediaCollection('cover');
             }
+            if ($request->file('input_cropper') !== null) {
+                $width = $request->get('picture')['width'];
+                $height = $request->get('picture')['height'];
+                $x = $request->get('picture')['x'];
+                $y = $request->get('picture')['y'];
+                $post->addMedia($request->file('input_cropper'))
+                    ->withManipulations([
+                        'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
+                    ])
+                    ->toMediaCollection('cover');
+            }
+            $basic = new SEOBasicController();
+            $basic->update($request->toArray(), $post);
             return back()
                 ->with('success', "Profile mis à jour");
         } elseif ($route === "blog.admin.post.translation.update") {
@@ -294,12 +299,18 @@ class PostController extends Controller
             try {
                 app()->setLocale($lang);
                 $this->post->update($id, $request->all());
-                if ($request->file('file') !== null) {
+                if ($request->get('input_media_delete') == 1) {
+                    $post->clearMediaCollection('cover');
+                }
+                if ($request->file('input_cropper') !== null) {
                     $width = $request->get('picture')['width'];
                     $height = $request->get('picture')['height'];
                     $x = $request->get('picture')['x'];
                     $y = $request->get('picture')['y'];
-                    $post->addMedia($request->file('file'))
+                    $post->addMedia($request->file('input_cropper'))
+                        ->withManipulations([
+                            'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
+                        ])
                         ->toMediaCollection('cover');
                 }
                 DB::commit();
@@ -323,5 +334,6 @@ class PostController extends Controller
         $post = $this->post->find($id);
         $this->authorize('delete', $post);
         $this->post->delete($id);
+        return redirect()->back();
     }
 }

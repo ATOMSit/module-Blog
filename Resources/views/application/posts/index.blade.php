@@ -14,12 +14,46 @@
 @endpush
 
 @push('scripts')
-    <script src="{{asset('application/vendors/custom/datatables/datatables.bundle.js')}}"
-            type="text/javascript"></script>
+    <script src="{{asset('application/vendors/custom/datatables/datatables.bundle.js')}}" type="text/javascript"></script>
     {!! $html->scripts() !!}
+    <script type="application/javascript">
+        function delete_post(id) {
+            var url = "/admin/blog/posts/destroy/" + id;
+            const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+
+            swalWithBootstrapButtons.fire({
+                title: 'Êtes-vous sûr ?',
+                text: "Attention ! Toute suppression est irréversible.",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Oui',
+                cancelButtonText: 'Non',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.value) {
+                    var frm = document.getElementById('atomsit_delete_form') || null;
+                    if (frm) {
+                        frm.action = url;
+                        frm.submit();
+                    }
+                }
+            })
+        }
+    </script>
 @endpush
 
 @section('content')
+    <form method="POST" id="atomsit_delete_form" action="" style="display: none">
+        {{ csrf_field() }}
+        {{ method_field('DELETE') }}
+        <input type="checkbox" name="validation" checked>
+    </form>
     @widget('AdvicesWidget', ['plugin' => 'blog'])
     <div class="kt-portlet">
         <div class="kt-portlet__body kt-portlet__body--fit">

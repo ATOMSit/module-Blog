@@ -173,7 +173,7 @@
                 @if(strpos($post->getFirstMedia('cover')->mime_type, 'image') !== false)
                     <div class="row justify-content-center" id="media_picture_present" style="display: flex">
                         <div class="col-xl-12">
-                            {{$post->getFirstMedia('cover')}}
+                            <img src="{{asset($post->getFirstMedia('cover')->getUrl('thumb'))}}">
                         </div>
                     </div>
                     {!! form_row($form_post->input_media_delete,$options=['label_show'=>false,'attr'=>['id'=>'input_media_delete']]) !!}

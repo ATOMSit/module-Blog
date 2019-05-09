@@ -1,11 +1,19 @@
 @extends('application.layouts.app')
 
 @section('title')
-    Création d'un article
+    @isset($post)
+        Modification d'un article
+    @else
+        Création d'un article
+    @endif
 @endsection
 
 @section('breadcrumbs')
-    {{ Breadcrumbs::render('blog.admin.post.create') }}
+    @isset($post)
+        {{ Breadcrumbs::render('blog.admin.post.edit',$post) }}
+    @else
+        {{ Breadcrumbs::render('blog.admin.post.create') }}
+    @endif
 @endsection
 
 @push('styles')
@@ -52,7 +60,7 @@
                                         confirmButtonClass: "btn btn-focus--pill--air",
                                         confirmButtonText: "Yes, delete it!"
                                     }).then(function (e) {
-                                        window.location.href = '';
+                                        window.location.href = '{{route('blog.admin.post.index')}}';
                                     })
                                 }
                             }))
@@ -157,6 +165,7 @@
                                     </div>
                                 </div>
                             </a>
+                            @include('seobasic::application.posts.components.tab')
                         </div>
                     </div>
                 </div>
@@ -168,7 +177,7 @@
                         </div>
                         <div class="kt-form__section kt-form__section--first">
                             <div class="kt-wizard-v1__form">
-                                {!! form_row($form_post->title) !!}
+                                {!! form_row($form_post->title,$options = ['description'=>"Votre titre est très important, il sert à accrocher votre visiteur, alors choisissez bien !"]) !!}
                                 {!! form_row($form_post->body) !!}
                             </div>
                         </div>
@@ -181,18 +190,18 @@
                             <div class="kt-wizard-v1__form">
                                 <div class="row">
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->published_at,$options = ['attr' => ['id' => 'published_at']]) !!}
+                                        {!! form_row($form_post->published_at,$options = ['description'=>"Saisisez la date de publication de votre article.",'attr' => ['id' => 'published_at']]) !!}
                                     </div>
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->published_at_time,$options = ['attr' => ['id' => 'published_at_time']]) !!}
+                                        {!! form_row($form_post->published_at_time,$options = ['description'=>"Saisisez la l'heure de publication de votre article.",'attr' => ['id' => 'published_at_time']]) !!}
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->unpublished_at,$options = ['attr' => ['id' => 'unpublished_at']]) !!}
+                                        {!! form_row($form_post->unpublished_at,$options = ['description'=>"Si vous souhaitez déprogrammer votre article, saisissez la date de retrait de votre article.",'attr' => ['id' => 'unpublished_at']]) !!}
                                     </div>
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->unpublished_at_time,$options = ['attr' => ['id' => 'unpublished_at_time']]) !!}
+                                        {!! form_row($form_post->unpublished_at_time,$options = ['description'=>"Si vous souhaitez déprogrammer votre article, saisissez l'heure de retrait de votre article.",'attr' => ['id' => 'unpublished_at_time']]) !!}
                                     </div>
                                 </div>
                             </div>
@@ -204,16 +213,17 @@
                             <div class="kt-wizard-v1__form">
                                 <div class="row">
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->online) !!}
+                                        {!! form_row($form_post->online,$options=['description'=>"Si vous souhaitez publier votre article."]) !!}
                                     </div>
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->indexable) !!}
+                                        {!! form_row($form_post->indexable,$options=['description'=>"Si vous souhaitez que votre article soit listable sur votre site."]) !!}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     @includeIf("blog::application.posts.components.media_form")
+                    @include('seobasic::application.posts.components.content')
                     <div class="kt-form__actions">
                         <div class="btn btn-secondary btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u"
                              data-ktwizard-type="action-prev">

@@ -6,6 +6,7 @@ use App\Forms\PictureForm;
 use Carbon\Carbon;
 use Kris\LaravelFormBuilder\Field;
 use Kris\LaravelFormBuilder\Form;
+use Modules\SEOBasic\Forms\BasicForm;
 
 class PostForm extends Form
 {
@@ -13,6 +14,8 @@ class PostForm extends Form
     {
         $this
             ->add('title', Field::TEXT, [
+                'template' => 'application.layouts.fields.text',
+                'description' => "",
                 'rules' => 'required|min:3|max:250'
             ])
             ->add('body', Field::TEXTAREA, [
@@ -44,6 +47,9 @@ class PostForm extends Form
             ])
             ->add('picture', 'form', [
                 'class' => $this->formBuilder->create(PictureForm::class)
+            ])
+            ->add('seobasic', 'form', [
+                'class' => $this->formBuilder->create(BasicForm::class)
             ])
             ->add('submit', Field::BUTTON_SUBMIT);
     }
