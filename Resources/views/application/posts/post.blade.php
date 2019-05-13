@@ -141,7 +141,7 @@
                                         <i class="flaticon2-crisp-icons"></i>
                                     </div>
                                     <div class="kt-wizard-v1__nav-label">
-                                        1) Contenu de l'article
+                                        @lang('blog::post_translation.views.tabs.tab1')
                                     </div>
                                 </div>
                             </a>
@@ -151,7 +151,7 @@
                                         <i class="flaticon-settings-1"></i>
                                     </div>
                                     <div class="kt-wizard-v1__nav-label">
-                                        2) Options de l'article
+                                        @lang('blog::post_translation.views.tabs.tab2')
                                     </div>
                                 </div>
                             </a>
@@ -161,7 +161,7 @@
                                         <i class="flaticon-notes"></i>
                                     </div>
                                     <div class="kt-wizard-v1__nav-label">
-                                        3) Media
+                                        @lang('blog::post_translation.views.tabs.tab3')
                                     </div>
                                 </div>
                             </a>
@@ -173,50 +173,50 @@
                     {!! form_start($form_post,$options = ['class' => 'kt-form','id'=>'kt_form']) !!}
                     <div class="kt-wizard-v1__content" data-ktwizard-type="step-content" data-ktwizard-state="current">
                         <div class="kt-heading kt-heading--md">
-                            Ajouter du contenu pertinent a votre article
+                            @lang('blog::post_translation.views.subtitles.content')
                         </div>
                         <div class="kt-form__section kt-form__section--first">
                             <div class="kt-wizard-v1__form">
-                                {!! form_row($form_post->title,$options = ['description'=>"Votre titre est très important, il sert à accrocher votre visiteur, alors choisissez bien !"]) !!}
-                                {!! form_row($form_post->body) !!}
+                                {!! form_row($form_post->title,$options=['label'=>trans("blog::post_translation.fields.title.label"),'description'=>trans("blog::post_translation.fields.title.description")]) !!}
+                                {!! form_row($form_post->body,$options=['label'=>trans("blog::post_translation.fields.body.label")]) !!}
                             </div>
                         </div>
                     </div>
                     <div class="kt-wizard-v1__content" data-ktwizard-type="step-content">
                         <div class="kt-heading kt-heading--md">
-                            Date et heure
+                            @lang('blog::post_translation.views.subtitles.hour')
                         </div>
                         <div class="kt-form__section kt-form__section--first">
                             <div class="kt-wizard-v1__form">
                                 <div class="row">
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->published_at,$options = ['description'=>"Saisisez la date de publication de votre article.",'attr' => ['id' => 'published_at']]) !!}
+                                        {!! form_row($form_post->published_at,$options = ['label'=>trans("blog::post_translation.fields.published_at.label"),'description'=>trans("blog::post_translation.fields.published_at.description"),'attr' => ['id' => 'published_at']]) !!}
                                     </div>
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->published_at_time,$options = ['description'=>"Saisisez la l'heure de publication de votre article.",'attr' => ['id' => 'published_at_time']]) !!}
+                                        {!! form_row($form_post->published_at_time,$options = ['label'=>trans("blog::post_translation.fields.published_at_time.label"),'description'=>trans("blog::post_translation.fields.published_at_time.description"),'attr' => ['id' => 'published_at_time']]) !!}
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->unpublished_at,$options = ['description'=>"Si vous souhaitez déprogrammer votre article, saisissez la date de retrait de votre article.",'attr' => ['id' => 'unpublished_at']]) !!}
+                                        {!! form_row($form_post->unpublished_at,$options = ['label'=>trans("blog::post_translation.fields.unpublished_at.label"),'description'=>trans("blog::post_translation.fields.unpublished_at.description"),'attr' => ['id' => 'unpublished_at']]) !!}
                                     </div>
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->unpublished_at_time,$options = ['description'=>"Si vous souhaitez déprogrammer votre article, saisissez l'heure de retrait de votre article.",'attr' => ['id' => 'unpublished_at_time']]) !!}
+                                        {!! form_row($form_post->unpublished_at_time,$options = ['label'=>trans("blog::post_translation.fields.unpublished_at_time.label"),'description'=>trans("blog::post_translation.fields.unpublished_at_time.description"),'attr' => ['id' => 'unpublished_at_time']]) !!}
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="kt-heading kt-heading--md">
-                            Option de confidentialité
+                            @lang('blog::post_translation.views.subtitles.confidentiality')
                         </div>
                         <div class="kt-form__section kt-form__section--first">
                             <div class="kt-wizard-v1__form">
                                 <div class="row">
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->online,$options=['description'=>"Si vous souhaitez publier votre article."]) !!}
+                                        {!! form_row($form_post->online,$options=['label'=>trans("blog::post_translation.fields.online.label"),'description'=>trans("blog::post_translation.fields.online.description")]) !!}
                                     </div>
                                     <div class="col-xl-6">
-                                        {!! form_row($form_post->indexable,$options=['description'=>"Si vous souhaitez que votre article soit listable sur votre site."]) !!}
+                                        {!! form_row($form_post->indexable,$options=['label'=>trans("blog::post_translation.fields.indexable.label"),'description'=>trans("blog::post_translation.fields.online.description")]) !!}
                                     </div>
                                 </div>
                             </div>
@@ -225,18 +225,14 @@
                     @includeIf("blog::application.posts.components.media_form")
                     @include('seobasic::application.posts.components.content')
                     <div class="kt-form__actions">
-                        <div class="btn btn-secondary btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u"
-                             data-ktwizard-type="action-prev">
-                            Précedent
-                        </div>
-                        <button type="submit"
-                                class="btn btn-success btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u"
-                                data-ktwizard-type="action-submit">
-                            Valider
+                        <button type="submit" class="btn btn-success btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-submit">
+                            @lang('blog::post_translation.views.buttons.save')
                         </button>
-                        <div class="btn btn-brand btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u"
-                             data-ktwizard-type="action-next">
-                            Suivant
+                        <div class="btn btn-secondary btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-prev">
+                            @lang('blog::post_translation.views.buttons.previous')
+                        </div>
+                        <div class="btn btn-brand btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-next">
+                            @lang('blog::post_translation.views.buttons.next')
                         </div>
                     </div>
                     {!! form_end($form_post,false) !!}

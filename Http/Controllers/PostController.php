@@ -83,20 +83,15 @@ class PostController extends Controller
             })
             ->addColumn('action', function (Post $post) {
                 $url_edit = route('blog.admin.post.edit', ['id' => $post->id]);
-                $url_destroy = route('blog.admin.post.destroy', ['id' => $post->id]);
-
                 return '
-                            <a href="#" class="btn btn-sm btn-clean btn-icon btn-icon-md" data-toggle="dropdown" aria-expanded="false">
-                              <i class="la la-ellipsis-h"></i>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right" x-placement="bottom-end" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-32px, 27px, 0px);">
-                                <a class="dropdown-item" href="' . $url_edit . '"><i class="la la - edit"></i> Modifier</a>
-                                <a class="dropdown-item" onclick="delete_post(' . $post->id . ')" href="#"><i class="la la - edit"></i> Supprimer</a>
-                            </div >
-                            <a href = "' . $url_edit . '" class="btn btn-sm btn-clean btn-icon btn-icon-md" title = "View" >
-                                <i class="la la-edit" ></i >
-                            </a >
-                            
+                        <span style="overflow: visible; position: relative; width: 110px;">						
+       					    <a href="' . $url_edit . '" title="Modifier" class="btn btn-sm btn-clean btn-icon btn-icon-md">							
+       					        <i class="la la-edit"></i>						
+       					    </a>						
+       					    <a href="#" onclick="delete_post(' . $post->id . ')" title="Supprimer" class="btn btn-sm btn-clean btn-icon btn-icon-md">							
+       					        <i class="la la-trash"></i>						
+       					    </a>					
+       					</span>
                 ';
             })
             ->rawColumns($rowColumns)
