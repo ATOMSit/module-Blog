@@ -25,7 +25,6 @@
             type="text/javascript"></script>
     <script type="application/javascript">
         var KTWizard1 = function () {
-            "use strict";
             var e, r, t;
             return {
                 init: function () {
@@ -100,9 +99,9 @@
             }
         }();
         jQuery(document).ready(function () {
-            KTWizard1.init();
             KTBootstrapTimepicker.init();
             KTBootstrapDatepicker.init();
+            KTWizard1.init();
         });
     </script>
 @endpush
@@ -225,12 +224,12 @@
                     @includeIf("blog::application.posts.components.media_form")
                     @include('seobasic::application.posts.components.content')
                     <div class="kt-form__actions">
-                        <button type="submit" class="btn btn-success btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-submit">
-                            @lang('blog::post_translation.views.buttons.save')
-                        </button>
                         <div class="btn btn-secondary btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-prev">
                             @lang('blog::post_translation.views.buttons.previous')
                         </div>
+                        <button type="submit" class="btn btn-success btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-submit">
+                            @lang('blog::post_translation.views.buttons.save')
+                        </button>
                         <div class="btn btn-brand btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-next">
                             @lang('blog::post_translation.views.buttons.next')
                         </div>

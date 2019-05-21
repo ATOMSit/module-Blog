@@ -3,6 +3,7 @@
 namespace Modules\Blog\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Option;
 use App\Plugin;
 use App\Website;
 use Carbon\Carbon;
@@ -29,6 +30,11 @@ class PostController extends Controller
     protected $default_lang;
 
     /**
+     * @var array
+     */
+    protected $languages;
+
+    /**
      * @var PostRepositoryInterface
      */
     protected $post;
@@ -41,15 +47,20 @@ class PostController extends Controller
     public function __construct(PostRepositoryInterface $post)
     {
         $this->post = $post;
-        $this->default_lang = "en";
+        $this->default_lang = Option::query()
+            ->where('name', 'default_language')
+            ->first()->value;
+        $this->languages = explode(',', Option::query()
+            ->where('name', 'languages')
+            ->first()
+            ->value);
         $this->middleware('auth', ['except' => ['show', 'datatable']]);
     }
 
     public function datatable()
     {
-        $array = array("fr", "en", "de", "es");
-        $default_lang = "en";
-        $array = \array_diff($array, [$default_lang]);
+        $array = \array_diff($this->languages, [$this->default_lang]);
+        $default_lang = $this->default_lang;
         $model = Post::query();
         $rowColumns = array('author', 'status', 'action', $array);
         $datatable = Datatables::eloquent($model);
@@ -106,9 +117,8 @@ class PostController extends Controller
      */
     public function index(Builder $builder)
     {
-        $array = ["fr", "en", "de", "es"];
-        $default_lang = "en";
-        $array = \array_diff($array, [$default_lang]);
+
+        $array = \array_diff($this->languages, [$this->default_lang]);
         if (request()->ajax()) {
             return DataTables::of(Post::query())->toJson();
         }
@@ -117,9 +127,16 @@ class PostController extends Controller
             ['data' => 'title', 'name' => 'title', 'title' => 'titre'],
         ]);
         foreach ($array as $item) {
-            $html->addColumn([
-                'data' => $item, 'name' => $item, 'title' => '<span class="flag-icon flag-icon-' . $item . '" ></span >'
-            ]);
+            if ($item === 'en') {
+                $html->addColumn([
+                    'data' => $item, 'name' => $item, 'title' => '<span class="flag-icon flag-icon-gb" ></span >'
+                ]);
+            } else {
+                $html->addColumn([
+                    'data' => $item, 'name' => $item, 'title' => '<span class="flag-icon flag-icon-' . $item . '" ></span >'
+                ]);
+            }
+
         }
         foreach ($default_columns as $default_column) {
             $html->addColumn([
@@ -246,6 +263,7 @@ class PostController extends Controller
             'value' => 1,
             'checked' => false
         ]);
+        app()->setLocale($this->default_lang);
         return view('blog::application.posts.post')
             ->with('post', $post)
             ->with('lang', $lang)

@@ -66,9 +66,9 @@ return [
             'next' => "Suivant"
         ],
         'tabs' => [
-            'tab1' => "CONTENU",
+            'tab1' => "CONTENT",
             'tab2' => "OPTIONS",
-            'tab3' => "MEDIAS"
+            'tab3' => "MEDIA"
         ],
         'subtitles' => [
             'content' => "Ajouter du contenu pertinent a votre article",

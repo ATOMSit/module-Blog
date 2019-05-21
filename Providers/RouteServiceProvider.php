@@ -4,6 +4,7 @@ namespace Modules\Blog\Providers;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -80,8 +81,8 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapAdminRoutes()
     {
-        Route::middleware('admin')
-            ->prefix('admin/blog/')
+        Route::middleware('admin', 'localize')
+            ->prefix(LaravelLocalization::setLocale() . '/admin/blog/')
             ->name('blog.admin.')
             ->namespace($this->moduleNamespace)
             ->group(__DIR__ . '/../Routes/admin.php');
