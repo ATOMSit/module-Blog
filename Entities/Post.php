@@ -8,6 +8,7 @@ use Hyn\Tenancy\Traits\UsesTenantConnection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\MediaCollection\MediaCollection;
 use Spatie\Translatable\HasTranslations;
 use Spatie\MediaLibrary\HasMedia\HasMedia;
 use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
@@ -83,10 +84,8 @@ class Post extends Model implements HasMedia
         'deleted_at' => 'datetime'
     ];
 
-    /*
+    /**
      * Definition of collections for the media
-     *
-     * Return MediaCollection
      */
     public function registerMediaCollections()
     {

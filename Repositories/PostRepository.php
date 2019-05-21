@@ -1,13 +1,12 @@
 <?php
 
-
 namespace Modules\Blog\Repositories;
 
-
-use App\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Modules\Blog\Entities\Post;
+use phpDocumentor\Reflection\Types\Boolean;
 
 class PostRepository implements PostRepositoryInterface
 {
@@ -15,9 +14,9 @@ class PostRepository implements PostRepositoryInterface
      * Get a specific post.
      *
      * @param int $post_id
-     * @return mixed
+     * @return Model
      */
-    public function find(int $post_id)
+    public function find(int $post_id): Model
     {
         return $post = Post::query()
             ->findOrFail($post_id);
@@ -26,21 +25,21 @@ class PostRepository implements PostRepositoryInterface
     /**
      * Get all post.
      *
-     * @return mixed
+     * @return Collection
      */
-    public function all()
+    public function all(): Collection
     {
         return Post::all();
     }
 
     /**
-     * Create a new record.
+     * Create a new Post.
      *
-     * @param User $user
+     * @param Model $model
      * @param array $post_data
-     * @return mixed|void
+     * @return Post
      */
-    public function store(Model $model, array $post_data)
+    public function store(Model $model, array $post_data): Post
     {
         $post = new Post([
             'title' => $post_data['title'],
@@ -51,7 +50,7 @@ class PostRepository implements PostRepositoryInterface
             'published_at' => Carbon::now(),
             'unpublished_at' => null
         ]);
-        $model->blog__posts()->save($post);
+        $post->author()->associate($model)->save();
         return $post;
     }
 
@@ -60,9 +59,9 @@ class PostRepository implements PostRepositoryInterface
      *
      * @param int $post_id
      * @param array $post_data
-     * @return mixed
+     * @return Post
      */
-    public function update($post_id, array $post_data)
+    public function update($post_id, array $post_data): Post
     {
         $post = $this->find($post_id);
         $post->update([
@@ -74,6 +73,7 @@ class PostRepository implements PostRepositoryInterface
             'published_at' => Carbon::now(),
             'unpublished_at' => null
         ]);
+        $post->save();
         return $post;
     }
 
@@ -83,19 +83,31 @@ class PostRepository implements PostRepositoryInterface
      * @param $post_id
      * @return mixed
      */
-    public function delete(int $post_id)
+    public function delete(int $post_id): Post
     {
         return Post::destroy($post_id);
     }
 
-    public function restore($post_id)
+    /**
+     * Restore a post.
+     *
+     * @param int $post_id
+     * @return bool
+     */
+    public function restore($post_id): Boolean
     {
         return Post::withoutTrashed()
             ->find($post_id)
             ->restore();
     }
 
-    public function forceDelete(int $post_id)
+    /**
+     * Force delete a post.
+     *
+     * @param int $post_id
+     * @return Post
+     */
+    public function forceDelete(int $post_id): Post
     {
         return Post::query()
             ->where('id', $post_id)

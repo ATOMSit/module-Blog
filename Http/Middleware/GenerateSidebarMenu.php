@@ -17,7 +17,7 @@ class GenerateSidebarMenu
     public function handle(Request $request, Closure $next)
     {
         \Menu::get('MyNavBar')
-            ->add('Articles', ['id' => 74398247329487])
+            ->add('Articles', ['icon' => 'fa fa-copy', 'id' => 74398247329487])
             ->add('Liste des articles', ['route' => 'blog.admin.post.index', 'parent' => 74398247329487]);
         return $next($request);
     }
