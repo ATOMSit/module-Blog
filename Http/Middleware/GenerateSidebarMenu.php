@@ -16,9 +16,12 @@ class GenerateSidebarMenu
      */
     public function handle(Request $request, Closure $next)
     {
-        \Menu::get('MyNavBar')
-            ->add('Articles', ['icon' => 'fa fa-copy', 'id' => 74398247329487])
-            ->add('Liste des articles', ['route' => 'blog.admin.post.index', 'parent' => 74398247329487]);
+        $menu = \Menu::get('MyNavBar');
+
+        $menu->add('Articles', ['icon' => 'fas fa-newspaper', 'id' => 'blog1']);
+        $menu->add('Liste des articles', ['route' => 'blog.admin.post.index', 'parent' => 'blog1', 'id' => 'blog11']);
+        $menu->add('Ajouter un article', ['route' => 'blog.admin.post.create', 'parent' => 'blog1', 'id' => 'blog12']);
+
         return $next($request);
     }
 }
