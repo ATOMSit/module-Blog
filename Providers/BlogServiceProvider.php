@@ -17,9 +17,13 @@ class BlogServiceProvider extends ServiceProvider
     public function boot(Router $router)
     {
         $this->registerTranslations();
+
         $this->registerConfig();
+
         $this->registerViews();
+
         $this->registerFactories();
+
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
 
         $router->pushMiddlewareToGroup('admin', GenerateSidebarMenu::class);

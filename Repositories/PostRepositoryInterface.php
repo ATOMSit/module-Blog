@@ -2,7 +2,6 @@
 
 namespace Modules\Blog\Repositories;
 
-use App\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Modules\Blog\Entities\Post;
