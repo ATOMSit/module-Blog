@@ -16,7 +16,7 @@ class GenerateSidebarMenu
      */
     public function handle(Request $request, Closure $next)
     {
-        $menu = \Menu::get('MyNavBar');
+        $menu = \Menu::get('sidebar');
 
         $menu->add('Articles', ['icon' => 'fas fa-newspaper', 'id' => 'blog1']);
         $menu->add('Liste des articles', ['route' => 'blog.admin.post.index', 'parent' => 'blog1', 'id' => 'blog11']);
