@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Modules\Blog\Entities\Post;
 use phpDocumentor\Reflection\Types\Boolean;
+use phpDocumentor\Reflection\Types\Integer;
 
 class PostRepository implements PostRepositoryInterface
 {
@@ -83,7 +84,7 @@ class PostRepository implements PostRepositoryInterface
      * @param $post_id
      * @return mixed
      */
-    public function delete(int $post_id): Post
+    public function delete(int $post_id): Integer
     {
         return Post::destroy($post_id);
     }

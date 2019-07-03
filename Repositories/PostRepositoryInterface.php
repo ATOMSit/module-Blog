@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Modules\Blog\Entities\Post;
 use phpDocumentor\Reflection\Types\Boolean;
+use phpDocumentor\Reflection\Types\Integer;
 
 interface PostRepositoryInterface
 {
@@ -48,7 +49,7 @@ interface PostRepositoryInterface
      * @param int $post_id
      * @return Post
      */
-    public function delete(int $post_id): Post;
+    public function delete(int $post_id): Integer;
 
     /**
      * Restore a post.
