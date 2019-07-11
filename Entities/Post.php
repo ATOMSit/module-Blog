@@ -3,6 +3,7 @@
 namespace Modules\Blog\Entities;
 
 use App\Media;
+use Carbon\Carbon;
 use Greabock\Tentacles\EloquentTentacle;
 use Hyn\Tenancy\Traits\UsesTenantConnection;
 use Illuminate\Database\Eloquent\Model;
@@ -82,6 +83,11 @@ class Post extends Model implements HasMedia
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime'
     ];
+
+    public function getUnPublishedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d/m/Y H:i');
+    }
 
     /**
      * Definition of collections for the media

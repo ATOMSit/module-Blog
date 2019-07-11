@@ -49,7 +49,7 @@ interface PostRepositoryInterface
      * @param int $post_id
      * @return Post
      */
-    public function delete(int $post_id): Integer;
+    public function delete(int $post_id);
 
     /**
      * Restore a post.

@@ -42,14 +42,16 @@ class PostRepository implements PostRepositoryInterface
      */
     public function store(Model $model, array $post_data): Post
     {
+        $date_published = $post_data['published_at'] . ' ' . $post_data['published_at_time'];
+        $date_unpublished = $post_data['unpublished_at'] . ' ' . $post_data['unpublished_at_time'];
         $post = new Post([
             'title' => $post_data['title'],
             'slug' => "test",
             'body' => $post_data['body'],
             'online' => $post_data['online'],
             'indexable' => $post_data['indexable'],
-            'published_at' => Carbon::now(),
-            'unpublished_at' => null
+            'published_at' => Carbon::parse($date_published),
+            'unpublished_at' => Carbon::parse($date_published)
         ]);
         $post->author()->associate($model)->save();
         return $post;
@@ -64,6 +66,8 @@ class PostRepository implements PostRepositoryInterface
      */
     public function update($post_id, array $post_data): Post
     {
+        $date_published = $post_data['published_at'];
+        $date_unpublished = $post_data['unpublished_at'];
         $post = $this->find($post_id);
         $post->update([
             'title' => $post_data['title'],
@@ -71,8 +75,8 @@ class PostRepository implements PostRepositoryInterface
             'body' => $post_data['body'],
             'online' => $post_data['online'],
             'indexable' => $post_data['indexable'],
-            'published_at' => Carbon::now(),
-            'unpublished_at' => null
+            'published_at' => Carbon::createFromFormat('d/m/Y H:i', $post_data['published_at'])->toDateTimeString(),
+            'unpublished_at' =>Carbon::createFromFormat('d/m/Y H:i', $post_data['unpublished_at'])->toDateTimeString()
         ]);
         $post->save();
         return $post;
@@ -84,7 +88,7 @@ class PostRepository implements PostRepositoryInterface
      * @param $post_id
      * @return mixed
      */
-    public function delete(int $post_id): Integer
+    public function delete(int $post_id)
     {
         return Post::destroy($post_id);
     }

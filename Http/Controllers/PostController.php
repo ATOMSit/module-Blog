@@ -198,6 +198,9 @@ class PostController extends Controller
      */
     public function store(PostRequest $request)
     {
+        return $request->get('published_at');
+
+
         $this->authorize('create', Post::class);
         $post = $this->post->store(Auth::user(), $request->all());
         if ($request->file('input_cropper') !== null) {
@@ -301,10 +304,9 @@ class PostController extends Controller
                     ])
                     ->toMediaCollection('cover');
             }
-            $basic = new SEOBasicController();
-            $basic->update($request->toArray(), $post);
+
             return back()
-                ->with('success', "Profile mis à jour");
+                ->with('success', "Votre article a bien était mis à jour.");
         } elseif ($route === "blog.admin.post.translation.update") {
             $post = $this->post->find($id);
             $this->authorize('update', $post);
@@ -332,7 +334,7 @@ class PostController extends Controller
                 return response()->json(['error' => $ex->getMessage()], 500);
             }
             return back()
-                ->with('success', "Profile mis à jour");
+                ->with('success', "Votre article a bien était mis à jour.");
         }
     }
 
@@ -344,9 +346,16 @@ class PostController extends Controller
      */
     public function destroy(int $id)
     {
-        $post = $this->post->find($id);
-        $this->authorize('delete', $post);
-        $this->post->delete($id);
-        return redirect()->back();
+        DB::beginTransaction();
+        try {
+            $post = $this->post->find($id);
+            $this->authorize('delete', $post);
+            $this->post->delete($id);
+            DB::commit();
+            return redirect()->back();
+        } catch (\Exception $ex) {
+            DB::rollback();
+            return response()->json(['error' => $ex->getMessage()], 500);
+        }
     }
 }

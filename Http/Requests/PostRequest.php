@@ -77,13 +77,7 @@ class PostRequest extends FormRequest
                         'published_at' => [
                             'required',
                         ],
-                        'published_at_time' => [
-                            'required',
-                        ],
                         'unpublished_at' => [
-                            'nullable',
-                        ],
-                        'unpublished_time' => [
                             'nullable',
                         ],
                     ];
