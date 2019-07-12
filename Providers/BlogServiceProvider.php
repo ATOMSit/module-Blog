@@ -4,6 +4,8 @@ namespace Modules\Blog\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Routing\Router;
+use Modules\Blog\Http\Middleware\GenerateSidebarMenu;
 
 class BlogServiceProvider extends ServiceProvider
 {
@@ -12,13 +14,19 @@ class BlogServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(Router $router)
     {
         $this->registerTranslations();
+
         $this->registerConfig();
+
         $this->registerViews();
+
         $this->registerFactories();
+
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
+
+        $router->pushMiddlewareToGroup('admin', GenerateSidebarMenu::class);
     }
 
     /**

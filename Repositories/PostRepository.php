@@ -1,13 +1,14 @@
 <?php
 
-
 namespace Modules\Blog\Repositories;
 
-
-use App\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Modules\Blog\Entities\Post;
+use Modules\Blog\Http\Requests\PostRequest;
+use phpDocumentor\Reflection\Types\Boolean;
+use phpDocumentor\Reflection\Types\Integer;
 
 class PostRepository implements PostRepositoryInterface
 {
@@ -15,9 +16,9 @@ class PostRepository implements PostRepositoryInterface
      * Get a specific post.
      *
      * @param int $post_id
-     * @return mixed
+     * @return Model
      */
-    public function find(int $post_id)
+    public function find(Post $post_id): Collection
     {
         return $post = Post::query()
             ->findOrFail($post_id);
@@ -26,32 +27,34 @@ class PostRepository implements PostRepositoryInterface
     /**
      * Get all post.
      *
-     * @return mixed
+     * @return Collection
      */
-    public function all()
+    public function all(): Collection
     {
         return Post::all();
     }
 
     /**
-     * Create a new record.
+     * Create a new Post.
      *
-     * @param User $user
+     * @param Model $model
      * @param array $post_data
-     * @return mixed|void
+     * @return Post
      */
-    public function store(Model $model, array $post_data)
+    public function store(Model $model, PostRequest $post_data): Post
     {
+        $date_published = $post_data['published_at'] . ' ' . $post_data['published_at_time'];
+        $date_unpublished = $post_data['unpublished_at'] . ' ' . $post_data['unpublished_at_time'];
         $post = new Post([
             'title' => $post_data['title'],
             'slug' => "test",
             'body' => $post_data['body'],
             'online' => $post_data['online'],
             'indexable' => $post_data['indexable'],
-            'published_at' => Carbon::now(),
-            'unpublished_at' => null
+            'published_at' => Carbon::parse($date_published),
+            'unpublished_at' => Carbon::parse($date_published)
         ]);
-        $model->blog__posts()->save($post);
+        $post->author()->associate($model)->save();
         return $post;
     }
 
@@ -60,20 +63,31 @@ class PostRepository implements PostRepositoryInterface
      *
      * @param int $post_id
      * @param array $post_data
-     * @return mixed
+     * @return Post
      */
-    public function update($post_id, array $post_data)
+    public function update(Post $post, PostRequest $post_data): Post
     {
-        $post = $this->find($post_id);
         $post->update([
-            'title' => $post_data['title'],
+            'title' => $post_data->get('title'),
             'slug' => "test",
-            'body' => $post_data['body'],
-            'online' => $post_data['online'],
-            'indexable' => $post_data['indexable'],
-            'published_at' => Carbon::now(),
-            'unpublished_at' => null
+            'body' => $post_data->get('body'),
+            'online' => $post_data->get('online'),
+            'indexable' => $post_data->get('indexable'),
+            'published_at' => Carbon::createFromFormat('d/m/Y H:i', $post_data->get('published_at'))->toDateTimeString(),
+            'unpublished_at' => Carbon::createFromFormat('d/m/Y H:i', $post_data->get('unpublished_at'))->toDateTimeString()
         ]);
+        if ($post_data->file('input_cropper') !== null) {
+            $post->clearMediaCollection('cover');
+            $width = $post_data->get('picture')['width'];
+            $height = $post_data->get('picture')['height'];
+            $x = $post_data->get('picture')['x'];
+            $y = $post_data->get('picture')['y'];
+            $post->addMedia($post_data->file('input_cropper'))
+                ->withManipulations([
+                    'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
+                ])
+                ->toMediaCollection('cover');
+        }
         return $post;
     }
 
@@ -83,19 +97,31 @@ class PostRepository implements PostRepositoryInterface
      * @param $post_id
      * @return mixed
      */
-    public function delete(int $post_id)
+    public function delete(Post $post_id)
     {
         return Post::destroy($post_id);
     }
 
-    public function restore($post_id)
+    /**
+     * Restore a post.
+     *
+     * @param int $post_id
+     * @return bool
+     */
+    public function restore($post_id): Boolean
     {
         return Post::withoutTrashed()
             ->find($post_id)
             ->restore();
     }
 
-    public function forceDelete(int $post_id)
+    /**
+     * Force delete a post.
+     *
+     * @param int $post_id
+     * @return Post
+     */
+    public function forceDelete(int $post_id): Post
     {
         return Post::query()
             ->where('id', $post_id)

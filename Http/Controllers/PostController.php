@@ -3,6 +3,7 @@
 namespace Modules\Blog\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Option;
 use App\Plugin;
 use App\Website;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use Illuminate\Http\Response;
 use Modules\Blog\Repositories\PostRepositoryInterface;
 use Modules\SEOBasic\Forms\BasicForm;
 use Modules\SEOBasic\Http\Controllers\SEOBasicController;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
 use Yajra\DataTables\Facades\DataTables;
 use Yajra\DataTables\Html\Builder;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +29,11 @@ class PostController extends Controller
      * @var string
      */
     protected $default_lang;
+
+    /**
+     * @var array
+     */
+    protected $languages;
 
     /**
      * @var PostRepositoryInterface
@@ -41,15 +48,20 @@ class PostController extends Controller
     public function __construct(PostRepositoryInterface $post)
     {
         $this->post = $post;
-        $this->default_lang = "en";
+        $this->default_lang = Option::query()
+            ->where('name', 'default_language')
+            ->first()->value;
+        $this->languages = explode(',', Option::query()
+            ->where('name', 'languages')
+            ->first()
+            ->value);
         $this->middleware('auth', ['except' => ['show', 'datatable']]);
     }
 
     public function datatable()
     {
-        $array = array("fr", "en", "de", "es");
-        $default_lang = "en";
-        $array = \array_diff($array, [$default_lang]);
+        $array = \array_diff($this->languages, [$this->default_lang]);
+        $default_lang = $this->default_lang;
         $model = Post::query();
         $rowColumns = array('author', 'status', 'action', $array);
         $datatable = Datatables::eloquent($model);
@@ -83,20 +95,15 @@ class PostController extends Controller
             })
             ->addColumn('action', function (Post $post) {
                 $url_edit = route('blog.admin.post.edit', ['id' => $post->id]);
-                $url_destroy = route('blog.admin.post.destroy', ['id' => $post->id]);
-
                 return '
-                            <a href="#" class="btn btn-sm btn-clean btn-icon btn-icon-md" data-toggle="dropdown" aria-expanded="false">
-                              <i class="la la-ellipsis-h"></i>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right" x-placement="bottom-end" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-32px, 27px, 0px);">
-                                <a class="dropdown-item" href="' . $url_edit . '"><i class="la la - edit"></i> Modifier</a>
-                                <a class="dropdown-item" onclick="delete_post(' . $post->id . ')" href="#"><i class="la la - edit"></i> Supprimer</a>
-                            </div >
-                            <a href = "' . $url_edit . '" class="btn btn-sm btn-clean btn-icon btn-icon-md" title = "View" >
-                                <i class="la la-edit" ></i >
-                            </a >
-                            
+                        <span style="overflow: visible; position: relative; width: 110px;">						
+       					    <a href="' . $url_edit . '" title="Modifier" class="btn btn-sm btn-clean btn-icon btn-icon-md">							
+       					        <i class="la la-edit"></i>						
+       					    </a>						
+       					    <a href="#" onclick="delete_post(' . $post->id . ')" title="Supprimer" class="btn btn-sm btn-clean btn-icon btn-icon-md">							
+       					        <i class="la la-trash"></i>						
+       					    </a>					
+       					</span>
                 ';
             })
             ->rawColumns($rowColumns)
@@ -111,9 +118,8 @@ class PostController extends Controller
      */
     public function index(Builder $builder)
     {
-        $array = ["fr", "en", "de", "es"];
-        $default_lang = "en";
-        $array = \array_diff($array, [$default_lang]);
+
+        $array = \array_diff($this->languages, [$this->default_lang]);
         if (request()->ajax()) {
             return DataTables::of(Post::query())->toJson();
         }
@@ -122,9 +128,16 @@ class PostController extends Controller
             ['data' => 'title', 'name' => 'title', 'title' => 'titre'],
         ]);
         foreach ($array as $item) {
-            $html->addColumn([
-                'data' => $item, 'name' => $item, 'title' => '<span class="flag-icon flag-icon-' . $item . '" ></span >'
-            ]);
+            if ($item === 'en') {
+                $html->addColumn([
+                    'data' => $item, 'name' => $item, 'title' => '<span class="flag-icon flag-icon-gb" ></span >'
+                ]);
+            } else {
+                $html->addColumn([
+                    'data' => $item, 'name' => $item, 'title' => '<span class="flag-icon flag-icon-' . $item . '" ></span >'
+                ]);
+            }
+
         }
         foreach ($default_columns as $default_column) {
             $html->addColumn([
@@ -144,9 +157,8 @@ class PostController extends Controller
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function show(int $id)
+    public function show(Post $post)
     {
-        $post = $this->post->find($id);
         $this->authorize('show', $post);
         return view('blog::show')
             ->with('post', $post);
@@ -212,16 +224,15 @@ class PostController extends Controller
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function edit(FormBuilder $formBuilder, int $id, string $lang = null)
+    public function edit(FormBuilder $formBuilder, Post $post, string $lang = null)
     {
         // Dans un premier temps nous determinons si et seulement si il sagit d'une langue déjà connu
         $route = Route::currentRouteName();
         if ($route === "blog.admin.post.edit") {
             app()->setLocale($this->default_lang);
-            $post = $this->post->find($id);
             $formOptions = [
                 'method' => 'POST',
-                'url' => route('blog.admin.post.update', ['id' => $id]),
+                'url' => route('blog.admin.post.update', ['id' => $post->id]),
                 'model' => $post
             ];
         } elseif ($route === "blog.admin.post.translation.edit") {
@@ -230,17 +241,15 @@ class PostController extends Controller
             if ($exists === true) {
                 if ($lang !== null) {
                     app()->setLocale($lang);
-                    $post = $this->post->find($id);
                     $this->authorize('update', $post);
                     $formOptions = [
                         'method' => 'POST',
-                        'url' => route('blog.admin.post.translation.update', ['id' => $id, 'lang' => $lang]),
+                        'url' => route('blog.admin.post.translation.update', ['id' => $post->id, 'lang' => $lang]),
                         'model' => $post
                     ];
 
                 }
             } else {
-                $post = $this->post->find($id);
                 return redirect()->route("blog.admin.post.edit", ['id' => $post->id]);
             }
         }
@@ -251,6 +260,7 @@ class PostController extends Controller
             'value' => 1,
             'checked' => false
         ]);
+        app()->setLocale($this->default_lang);
         return view('blog::application.posts.post')
             ->with('post', $post)
             ->with('lang', $lang)
@@ -265,62 +275,25 @@ class PostController extends Controller
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function update(PostRequest $request, int $id, string $lang = null)
+    public function update(PostRequest $request, Post $post, string $lang = null)
     {
-        $route = Route::currentRouteName();
-        if ($route === "blog.admin.post.update") {
-            $post = $this->post->find($id);
-            $this->authorize('update', $post);
-
+        if ($lang === null) {
             app()->setLocale($this->default_lang);
-            $this->post->update($id, $request->all());
-            if ($request->get('input_media_delete') == 1) {
-                $post->clearMediaCollection('cover');
-            }
-            if ($request->file('input_cropper') !== null) {
-                $width = $request->get('picture')['width'];
-                $height = $request->get('picture')['height'];
-                $x = $request->get('picture')['x'];
-                $y = $request->get('picture')['y'];
-                $post->addMedia($request->file('input_cropper'))
-                    ->withManipulations([
-                        'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
-                    ])
-                    ->toMediaCollection('cover');
-            }
-            $basic = new SEOBasicController();
-            $basic->update($request->toArray(), $post);
-            return back()
-                ->with('success', "Profile mis à jour");
-        } elseif ($route === "blog.admin.post.translation.update") {
-            $post = $this->post->find($id);
-            $this->authorize('update', $post);
-            DB::beginTransaction();
-            try {
-                app()->setLocale($lang);
-                $this->post->update($id, $request->all());
-                if ($request->get('input_media_delete') == 1) {
-                    $post->clearMediaCollection('cover');
-                }
-                if ($request->file('input_cropper') !== null) {
-                    $width = $request->get('picture')['width'];
-                    $height = $request->get('picture')['height'];
-                    $x = $request->get('picture')['x'];
-                    $y = $request->get('picture')['y'];
-                    $post->addMedia($request->file('input_cropper'))
-                        ->withManipulations([
-                            'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
-                        ])
-                        ->toMediaCollection('cover');
-                }
-                DB::commit();
-            } catch (\Exception $ex) {
-                DB::rollback();
-                return response()->json(['error' => $ex->getMessage()], 500);
-            }
-            return back()
-                ->with('success', "Profile mis à jour");
+        } elseif ($lang !== null) {
+            app()->setLocale($lang);
         }
+        $this->authorize('update', $post);
+        DB::beginTransaction();
+        try {
+            app()->setLocale($lang);
+            $this->post->update($post, $request);
+            DB::commit();
+        } catch (\Exception $ex) {
+            DB::rollback();
+            return response()->json(['error' => $ex->getMessage()], 500);
+        }
+        return back()
+            ->with('success', "Votre article a bien était mis à jour.");
     }
 
     /**
@@ -331,9 +304,16 @@ class PostController extends Controller
      */
     public function destroy(int $id)
     {
-        $post = $this->post->find($id);
-        $this->authorize('delete', $post);
-        $this->post->delete($id);
-        return redirect()->back();
+        DB::beginTransaction();
+        try {
+            $post = $this->post->find($id);
+            $this->authorize('delete', $post);
+            $this->post->delete($id);
+            DB::commit();
+            return redirect()->back();
+        } catch (\Exception $ex) {
+            DB::rollback();
+            return response()->json(['error' => $ex->getMessage()], 500);
+        }
     }
 }

@@ -1,11 +1,14 @@
 <?php
 
-
 namespace Modules\Blog\Repositories;
 
-
-use App\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Modules\Blog\Entities\Post;
+use Modules\Blog\Http\Requests\PostRequest;
+use phpDocumentor\Reflection\File;
+use phpDocumentor\Reflection\Types\Boolean;
+use phpDocumentor\Reflection\Types\Integer;
 
 interface PostRepositoryInterface
 {
@@ -13,56 +16,56 @@ interface PostRepositoryInterface
      * Get a specific post.
      *
      * @param int $post_id
-     * @return mixed
+     * @return Model
      */
-    public function find(int $post_id);
+    public function find(Post $post_id): Collection;
 
     /**
      * Get all post.
      *
-     * @return mixed
+     * @return Collection
      */
-    public function all();
+    public function all(): Collection;
 
     /**
-     * Create a new record.
+     * Created a new Post.
      *
-     * @param User $user
+     * @param Model $model
      * @param array $post_data
-     * @return mixed
+     * @return Post
      */
-    public function store(Model $model, array $post_data);
+    public function store(Model $model, PostRequest $post_data): Post;
 
     /**
      * Update a post.
      *
      * @param int $post_id
      * @param array $post_data
-     * @return mixed
+     * @return Post
      */
-    public function update(int $post_id, array $post_data);
+    public function update(Post $post_id, PostRequest $post_data): Post;
 
     /**
-     * Delete a post.
+     * Delete a post
      *
      * @param int $post_id
-     * @return mixed
+     * @return Post
      */
-    public function delete(int $post_id);
+    public function delete(Post $post_id);
 
     /**
      * Restore a post.
      *
      * @param int $post_id
-     * @return mixed
+     * @return bool
      */
-    public function restore(int $post_id);
+    public function restore(int $post_id): Boolean;
 
     /**
      * Force delete a post.
      *
      * @param int $post_id
-     * @return mixed
+     * @return Post
      */
-    public function forceDelete(int $post_id);
+    public function forceDelete(int $post_id): Post;
 }

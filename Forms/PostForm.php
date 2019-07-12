@@ -23,24 +23,21 @@ class PostForm extends Form
             ])
             ->add('online', Field::SELECT, [
                 'choices' => [1 => 'Oui', 0 => 'Non'],
+                'template' => 'application.layouts.fields.select',
                 'rules' => 'required'
             ])
             ->add('indexable', Field::SELECT, [
                 'choices' => [1 => 'Oui', 0 => 'Non'],
+                'template' => 'application.layouts.fields.select',
                 'rules' => 'required'
             ])
             ->add('published_at', Field::TEXT, [
-                'value' => Carbon::now()->format('d/m/Y'),
-                'rules' => 'required'
-            ])
-            ->add('published_at_time', Field::TEXT, [
-                'value' => Carbon::now()->format('H:i:s'),
+                'value' => Carbon::now()->format('d/m/Y H:i'),
+                'template' => 'application.layouts.fields.text',
                 'rules' => 'required'
             ])
             ->add('unpublished_at', Field::TEXT, [
-                'rules' => 'nullable'
-            ])
-            ->add('unpublished_at_time', Field::TEXT, [
+                'template' => 'application.layouts.fields.text',
                 'rules' => 'nullable'
             ])
             ->add('input_cropper', Field::FILE, [
