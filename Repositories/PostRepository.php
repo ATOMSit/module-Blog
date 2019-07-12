@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Modules\Blog\Entities\Post;
+use Modules\Blog\Http\Requests\PostRequest;
 use phpDocumentor\Reflection\Types\Boolean;
 use phpDocumentor\Reflection\Types\Integer;
 
@@ -17,7 +18,7 @@ class PostRepository implements PostRepositoryInterface
      * @param int $post_id
      * @return Model
      */
-    public function find(int $post_id): Model
+    public function find(Post $post_id): Collection
     {
         return $post = Post::query()
             ->findOrFail($post_id);
@@ -40,7 +41,7 @@ class PostRepository implements PostRepositoryInterface
      * @param array $post_data
      * @return Post
      */
-    public function store(Model $model, array $post_data): Post
+    public function store(Model $model, PostRequest $post_data): Post
     {
         $date_published = $post_data['published_at'] . ' ' . $post_data['published_at_time'];
         $date_unpublished = $post_data['unpublished_at'] . ' ' . $post_data['unpublished_at_time'];
@@ -64,21 +65,29 @@ class PostRepository implements PostRepositoryInterface
      * @param array $post_data
      * @return Post
      */
-    public function update($post_id, array $post_data): Post
+    public function update(Post $post, PostRequest $post_data): Post
     {
-        $date_published = $post_data['published_at'];
-        $date_unpublished = $post_data['unpublished_at'];
-        $post = $this->find($post_id);
         $post->update([
-            'title' => $post_data['title'],
+            'title' => $post_data->get('title'),
             'slug' => "test",
-            'body' => $post_data['body'],
-            'online' => $post_data['online'],
-            'indexable' => $post_data['indexable'],
-            'published_at' => Carbon::createFromFormat('d/m/Y H:i', $post_data['published_at'])->toDateTimeString(),
-            'unpublished_at' =>Carbon::createFromFormat('d/m/Y H:i', $post_data['unpublished_at'])->toDateTimeString()
+            'body' => $post_data->get('body'),
+            'online' => $post_data->get('online'),
+            'indexable' => $post_data->get('indexable'),
+            'published_at' => Carbon::createFromFormat('d/m/Y H:i', $post_data->get('published_at'))->toDateTimeString(),
+            'unpublished_at' => Carbon::createFromFormat('d/m/Y H:i', $post_data->get('unpublished_at'))->toDateTimeString()
         ]);
-        $post->save();
+        if ($post_data->file('input_cropper') !== null) {
+            $post->clearMediaCollection('cover');
+            $width = $post_data->get('picture')['width'];
+            $height = $post_data->get('picture')['height'];
+            $x = $post_data->get('picture')['x'];
+            $y = $post_data->get('picture')['y'];
+            $post->addMedia($post_data->file('input_cropper'))
+                ->withManipulations([
+                    'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
+                ])
+                ->toMediaCollection('cover');
+        }
         return $post;
     }
 
@@ -88,7 +97,7 @@ class PostRepository implements PostRepositoryInterface
      * @param $post_id
      * @return mixed
      */
-    public function delete(int $post_id)
+    public function delete(Post $post_id)
     {
         return Post::destroy($post_id);
     }

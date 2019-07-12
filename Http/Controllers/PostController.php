@@ -18,6 +18,7 @@ use Illuminate\Http\Response;
 use Modules\Blog\Repositories\PostRepositoryInterface;
 use Modules\SEOBasic\Forms\BasicForm;
 use Modules\SEOBasic\Http\Controllers\SEOBasicController;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
 use Yajra\DataTables\Facades\DataTables;
 use Yajra\DataTables\Html\Builder;
 use Illuminate\Support\Facades\Route;
@@ -156,9 +157,8 @@ class PostController extends Controller
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function show(int $id)
+    public function show(Post $post)
     {
-        $post = $this->post->find($id);
         $this->authorize('show', $post);
         return view('blog::show')
             ->with('post', $post);
@@ -198,9 +198,6 @@ class PostController extends Controller
      */
     public function store(PostRequest $request)
     {
-        return $request->get('published_at');
-
-
         $this->authorize('create', Post::class);
         $post = $this->post->store(Auth::user(), $request->all());
         if ($request->file('input_cropper') !== null) {
@@ -227,16 +224,15 @@ class PostController extends Controller
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function edit(FormBuilder $formBuilder, int $id, string $lang = null)
+    public function edit(FormBuilder $formBuilder, Post $post, string $lang = null)
     {
         // Dans un premier temps nous determinons si et seulement si il sagit d'une langue déjà connu
         $route = Route::currentRouteName();
         if ($route === "blog.admin.post.edit") {
             app()->setLocale($this->default_lang);
-            $post = $this->post->find($id);
             $formOptions = [
                 'method' => 'POST',
-                'url' => route('blog.admin.post.update', ['id' => $id]),
+                'url' => route('blog.admin.post.update', ['id' => $post->id]),
                 'model' => $post
             ];
         } elseif ($route === "blog.admin.post.translation.edit") {
@@ -245,17 +241,15 @@ class PostController extends Controller
             if ($exists === true) {
                 if ($lang !== null) {
                     app()->setLocale($lang);
-                    $post = $this->post->find($id);
                     $this->authorize('update', $post);
                     $formOptions = [
                         'method' => 'POST',
-                        'url' => route('blog.admin.post.translation.update', ['id' => $id, 'lang' => $lang]),
+                        'url' => route('blog.admin.post.translation.update', ['id' => $post->id, 'lang' => $lang]),
                         'model' => $post
                     ];
 
                 }
             } else {
-                $post = $this->post->find($id);
                 return redirect()->route("blog.admin.post.edit", ['id' => $post->id]);
             }
         }
@@ -281,61 +275,25 @@ class PostController extends Controller
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function update(PostRequest $request, int $id, string $lang = null)
+    public function update(PostRequest $request, Post $post, string $lang = null)
     {
-        $route = Route::currentRouteName();
-        if ($route === "blog.admin.post.update") {
-            $post = $this->post->find($id);
-            $this->authorize('update', $post);
-
+        if ($lang === null) {
             app()->setLocale($this->default_lang);
-            $this->post->update($id, $request->all());
-            if ($request->get('input_media_delete') == 1) {
-                $post->clearMediaCollection('cover');
-            }
-            if ($request->file('input_cropper') !== null) {
-                $width = $request->get('picture')['width'];
-                $height = $request->get('picture')['height'];
-                $x = $request->get('picture')['x'];
-                $y = $request->get('picture')['y'];
-                $post->addMedia($request->file('input_cropper'))
-                    ->withManipulations([
-                        'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
-                    ])
-                    ->toMediaCollection('cover');
-            }
-
-            return back()
-                ->with('success', "Votre article a bien était mis à jour.");
-        } elseif ($route === "blog.admin.post.translation.update") {
-            $post = $this->post->find($id);
-            $this->authorize('update', $post);
-            DB::beginTransaction();
-            try {
-                app()->setLocale($lang);
-                $this->post->update($id, $request->all());
-                if ($request->get('input_media_delete') == 1) {
-                    $post->clearMediaCollection('cover');
-                }
-                if ($request->file('input_cropper') !== null) {
-                    $width = $request->get('picture')['width'];
-                    $height = $request->get('picture')['height'];
-                    $x = $request->get('picture')['x'];
-                    $y = $request->get('picture')['y'];
-                    $post->addMedia($request->file('input_cropper'))
-                        ->withManipulations([
-                            'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
-                        ])
-                        ->toMediaCollection('cover');
-                }
-                DB::commit();
-            } catch (\Exception $ex) {
-                DB::rollback();
-                return response()->json(['error' => $ex->getMessage()], 500);
-            }
-            return back()
-                ->with('success', "Votre article a bien était mis à jour.");
+        } elseif ($lang !== null) {
+            app()->setLocale($lang);
         }
+        $this->authorize('update', $post);
+        DB::beginTransaction();
+        try {
+            app()->setLocale($lang);
+            $this->post->update($post, $request);
+            DB::commit();
+        } catch (\Exception $ex) {
+            DB::rollback();
+            return response()->json(['error' => $ex->getMessage()], 500);
+        }
+        return back()
+            ->with('success', "Votre article a bien était mis à jour.");
     }
 
     /**

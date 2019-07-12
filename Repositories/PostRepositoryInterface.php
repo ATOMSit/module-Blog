@@ -5,6 +5,8 @@ namespace Modules\Blog\Repositories;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Modules\Blog\Entities\Post;
+use Modules\Blog\Http\Requests\PostRequest;
+use phpDocumentor\Reflection\File;
 use phpDocumentor\Reflection\Types\Boolean;
 use phpDocumentor\Reflection\Types\Integer;
 
@@ -16,7 +18,7 @@ interface PostRepositoryInterface
      * @param int $post_id
      * @return Model
      */
-    public function find(int $post_id): Model;
+    public function find(Post $post_id): Collection;
 
     /**
      * Get all post.
@@ -32,7 +34,7 @@ interface PostRepositoryInterface
      * @param array $post_data
      * @return Post
      */
-    public function store(Model $model, array $post_data): Post;
+    public function store(Model $model, PostRequest $post_data): Post;
 
     /**
      * Update a post.
@@ -41,7 +43,7 @@ interface PostRepositoryInterface
      * @param array $post_data
      * @return Post
      */
-    public function update(int $post_id, array $post_data): Post;
+    public function update(Post $post_id, PostRequest $post_data): Post;
 
     /**
      * Delete a post
@@ -49,7 +51,7 @@ interface PostRepositoryInterface
      * @param int $post_id
      * @return Post
      */
-    public function delete(int $post_id);
+    public function delete(Post $post_id);
 
     /**
      * Restore a post.

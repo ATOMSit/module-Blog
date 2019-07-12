@@ -5,6 +5,7 @@ namespace Modules\Blog\Providers;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+use Modules\Blog\Entities\Post;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -25,6 +26,8 @@ class RouteServiceProvider extends ServiceProvider
     public function boot()
     {
         parent::boot();
+
+        Route::model('post', Post::class);
     }
 
     /**
