@@ -82,7 +82,7 @@ class PostPolicy
      */
     public function delete(User $user, Post $model)
     {
-        if ($user->is($model)) {
+        if ($model->author->is($user)) {
             return true;
         } elseif ($user->hasPermissionTo('blog_post_delete')) {
             return true;
@@ -100,7 +100,7 @@ class PostPolicy
      */
     public function restore(User $user, Post $model)
     {
-        if ($user->is($model)) {
+        if ($model->author->is($user)) {
             return true;
         } elseif ($user->hasPermissionTo('blog_post_restore')) {
             return true;
@@ -118,7 +118,7 @@ class PostPolicy
      */
     public function forceDelete(User $user, Post $model)
     {
-        if ($user->is($model)) {
+        if ($model->author->is($user)) {
             return true;
         } elseif ($user->hasPermissionTo('blog_post_forceDelete')) {
             return true;

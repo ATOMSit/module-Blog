@@ -1,210 +1,153 @@
 @extends('application.layouts.app')
 
 @section('title')
-    Création d'un article
+    @isset($post)
+        Modification d'un article
+    @else
+        Création d'un article
+    @endif
+@endsection
+
+@section('breadcrumbs')
+    @isset($post)
+        {{ Breadcrumbs::render('blog.admin.post.edit',$post) }}
+    @else
+        {{ Breadcrumbs::render('blog.admin.post.create') }}
+    @endif
 @endsection
 
 @push('styles')
     <link href="{{asset('application/app/custom/wizard/wizard-v1.default.css')}}" rel="stylesheet" type="text/css"/>
+    <link href="{{asset('application/vendors/general/bootstrap-datetime-picker/css/bootstrap-datetimepicker.css')}}" rel="stylesheet" type="text/css"/>
 @endpush
 
 @push('scripts')
-    <script src="{{asset('application/app/custom/general/crud/forms/widgets/bootstrap-datepicker.js')}}" type="text/javascript"></script>
-    <script type="application/javascript">
-        var KTWizard1 = function () {
-            "use strict";
-            var e, r, t;
-            return {
-                init: function () {
-                    var i;
-                    KTUtil.get("kt_wizard_v1"), e = $("#kt_form"), (t = new KTWizard("kt_wizard_v1", {startStep: 1})).on("beforeNext", function (e) {
-                        !0 !== r.form() && e.stop()
-                    }), t.on("change", function (e) {
-                        setTimeout(function () {
-                            KTUtil.scrollTop()
-                        }, 500)
-                    }),
-                        r = e.validate({
-                            ignore: ":hidden",
-                            invalidHandler: function (e, r) {
-                                KTUtil.scrollTop(), swal.fire({
-                                    allowOutsideClick: false,
-                                    title: "",
-                                    text: "Le formulaire comporte des erreurs, veuillez les corriger avant de continuer.",
-                                    type: "error",
-                                    confirmButtonClass: "btn btn-principal"
-                                })
-                            }
-                        }),
-                        (i = e.find('[data-ktwizard-type="action-submit"]')).on("click", function (t) {
-                            t.preventDefault(), r.form() && (KTApp.progress(i), e.ajaxSubmit({
-                                success: function () {
-                                    KTUtil.scrollTop(), swal.fire({
-                                        allowOutsideClick: false,
-                                        title: "Féléicitation !",
-                                        text: "Votre article a bien était publié",
-                                        type: "success",
-                                        confirmButtonClass: "btn btn-focus--pill--air",
-                                        confirmButtonText: "Yes, delete it!"
-                                    }).then(function (e) {
-                                        window.location.href = '';
-                                    })
-                                }
-                            }))
-                        })
-                }
-            }
-        }();
-        var KTBootstrapTimepicker = {
-            init: function () {
-                $("#published_at_time, #unpublished_at_time").timepicker({
-                    minuteStep: 1,
-                    defaultTime: "",
-                    showSeconds: !0,
-                    showMeridian: !1,
-                    snapToStep: !0
-                })
-            }
-        };
-        var KTBootstrapDatepicker = function () {
-            var t;
-            t = KTUtil.isRTL() ? {leftArrow: '<i class="la la-angle-right"></i>', rightArrow: '<i class="la la-angle-left"></i>'} : {
-                leftArrow: '<i class="la la-angle-left"></i>',
-                rightArrow: '<i class="la la-angle-right"></i>'
+    <script src="{{asset('application/vendors/general/bootstrap-datetime-picker/js/bootstrap-datetimepicker.min.js')}}" type="text/javascript"></script>
+    <script>
+        var KTBootstrapDatetimepicker = function () {
+            var demos = function () {
+                // minimal setup
+                $('#published_at').datetimepicker({
+                    todayHighlight: true,
+                    autoclose: true,
+                    format: 'dd/mm/yyyy hh:ii'
+                });
+                // minimal setup
+                $('#unpublished_at').datetimepicker({
+                    todayHighlight: true,
+                    autoclose: true,
+                    format: 'dd/mm/yyyy hh:ii'
+                });
             };
             return {
+                // public functions
                 init: function () {
-                    $("#published_at, #unpublished_at").datepicker({
-                        rtl: KTUtil.isRTL(),
-                        todayHighlight: !0,
-                        format: 'dd/mm/yyyy',
-                        orientation: "bottom left",
-                    })
+                    demos();
                 }
-            }
+            };
         }();
         jQuery(document).ready(function () {
-            KTWizard1.init();
-            KTBootstrapTimepicker.init();
-            KTBootstrapDatepicker.init();
+            KTBootstrapDatetimepicker.init();
         });
     </script>
 @endpush
 
 @section('content')
-    <div class="kt-portlet">
-        <div class="kt-portlet__body kt-portlet__body--fit">
-            <div class="kt-grid  kt-wizard-v1 kt-wizard-v1--white" id="kt_wizard_v1" data-ktwizard-state="step-first">
-                <div class="kt-grid__item">
-                    <div class="kt-wizard-v1__nav">
-                        <div class="kt-wizard-v1__nav-items">
-                            <a class="kt-wizard-v1__nav-item" href="#" data-ktwizard-type="step" data-ktwizard-state="current">
-                                <div class="kt-wizard-v1__nav-body">
-                                    <div class="kt-wizard-v1__nav-icon">
-                                        <i class="flaticon2-crisp-icons"></i>
+    @widget('AdvicesWidget', ['plugin' => 'blog'])
+    @isset($lang)
+        @if($lang === null)
+            lang null
+        @else
+            <div class="alert alert-light alert-elevate fade show" role="alert">
+                <div class="alert-icon"><span class="flag-icon flag-icon-{{$lang}}" style="font-size: 35px"></span></div>
+                <div class="alert-text">
+                    Vous editer la traduction Française de votre article
+                </div>
+                <div class="alert-close">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true"><i class="la la-close"></i></span>
+                    </button>
+                </div>
+            </div>
+        @endif
+    @endisset
+    <div class="row">
+        <div class="col-md-12">
+            <div class="kt-portlet">
+                <div class="kt-portlet__head">
+                    <div class="kt-portlet__head-label">
+                        <h3 class="kt-portlet__head-title">
+                            Rédiger un article
+                        </h3>
+                    </div>
+                </div>
+                {!! form_start($form_post,$options = ['class' => 'kt-form']) !!}
+                <div class="kt-portlet__body">
+                    <div class="row">
+                        <div class="col-8">
+                            {!! form_row($form_post->title,$options=['label'=>trans("blog::post_translation.fields.title.label"),'description'=>trans("blog::post_translation.fields.title.description")]) !!}
+                            {!! form_row($form_post->body,$options=['label'=>trans("blog::post_translation.fields.body.label")]) !!}
+                        </div>
+                        <div class="col-4">
+                            <div class="accordion accordion-solid accordion-toggle-plus" id="accordionExample6">
+                                <div class="card">
+                                    <div class="card-header" id="headingOne6">
+                                        <div class="card-title" data-toggle="collapse" data-target="#collapseOne6" aria-expanded="true" aria-controls="collapseOne6">
+                                            <i class="flaticon-pie-chart-1"></i> Options
+                                        </div>
                                     </div>
-                                    <div class="kt-wizard-v1__nav-label">
-                                        1) Contenu de l'article
+                                    <div id="collapseOne6" class="collapse show" aria-labelledby="headingOne6" data-parent="#accordionExample6">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-xl-12">
+                                                    {!! form_row($form_post->published_at,$options = ['label'=>trans("blog::post_translation.fields.published_at.label"),'description'=>trans("blog::post_translation.fields.published_at.description"),'attr' => ['id' => 'published_at']]) !!}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-xl-12">
+                                                    {!! form_row($form_post->unpublished_at,$options = ['label'=>trans("blog::post_translation.fields.unpublished_at.label"),'description'=>trans("blog::post_translation.fields.unpublished_at.description"),'attr' => ['id' => 'unpublished_at']]) !!}
+                                                </div>
+                                            </div>
+                                            <div class="kt-wizard-v1__form">
+                                                <div class="row">
+                                                    <div class="col-xl-6">
+                                                        {!! form_row($form_post->online,$options=['label'=>trans("blog::post_translation.fields.online.label"),'description'=>trans("blog::post_translation.fields.online.description")]) !!}
+                                                    </div>
+                                                    <div class="col-xl-6">
+                                                        {!! form_row($form_post->indexable,$options=['label'=>trans("blog::post_translation.fields.indexable.label"),'description'=>trans("blog::post_translation.fields.online.description")]) !!}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </a>
-                            <a class="kt-wizard-v1__nav-item" href="#" data-ktwizard-type="step">
-                                <div class="kt-wizard-v1__nav-body">
-                                    <div class="kt-wizard-v1__nav-icon">
-                                        <i class="flaticon-settings-1"></i>
+
+                                <div class="card">
+                                    <div class="card-header" id="headingOne7">
+                                        <div class="card-title" data-toggle="collapse" data-target="#collapseOne7" aria-expanded="false" aria-controls="collapseOne7">
+                                            <i class="flaticon2-image-file"></i> Image de ûne
+                                        </div>
                                     </div>
-                                    <div class="kt-wizard-v1__nav-label">
-                                        2) Options de l'article
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="kt-wizard-v1__nav-item" href="#" data-ktwizard-type="step">
-                                <div class="kt-wizard-v1__nav-body">
-                                    <div class="kt-wizard-v1__nav-icon">
-                                        <i class="flaticon-notes"></i>
-                                    </div>
-                                    <div class="kt-wizard-v1__nav-label">
-                                        3) Media
+                                    <div id="collapseOne7" class="collapse show" aria-labelledby="headingOne7" data-parent="#accordionExample6">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-xl-12">
+                                                    @include('blog::application.posts.components.media_form')
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kt-portlet__foot">
+                        <div class="kt-form__actions">
+                            {!! form_row($form_post->submit,$options=['label'=>"Valider",'attr' => ['class' => 'btn btn-primary']]) !!}
                         </div>
                     </div>
                 </div>
-                <div class="kt-grid__item kt-grid__item--fluid kt-wizard-v1__wrapper">
-                    {!! form_start($form_post,$options = ['class' => 'kt-form','id'=>'kt_form']) !!}
-                    <div class="kt-wizard-v1__content" data-ktwizard-type="step-content" data-ktwizard-state="current">
-                        <div class="kt-heading kt-heading--md">
-                            Ajouter du contenu pertinent a votre article
-                        </div>
-                        <div class="kt-form__section kt-form__section--first">
-                            <div class="kt-wizard-v1__form">
-                                {!! form_row($form_post->title) !!}
-                                {!! form_row($form_post->body) !!}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="kt-wizard-v1__content" data-ktwizard-type="step-content">
-                        <div class="kt-heading kt-heading--md">
-                            Date et heure
-                        </div>
-                        <div class="kt-form__section kt-form__section--first">
-                            <div class="kt-wizard-v1__form">
-                                <div class="row">
-                                    <div class="col-xl-6">
-                                        {!! form_row($form_post->published_at,$options = ['attr' => ['id' => 'published_at']]) !!}
-                                    </div>
-                                    <div class="col-xl-6">
-                                        {!! form_row($form_post->published_at_time,$options = ['attr' => ['id' => 'published_at_time']]) !!}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-xl-6">
-                                        {!! form_row($form_post->unpublished_at,$options = ['attr' => ['id' => 'unpublished_at']]) !!}
-                                    </div>
-                                    <div class="col-xl-6">
-                                        {!! form_row($form_post->unpublished_at_time,$options = ['attr' => ['id' => 'unpublished_at_time']]) !!}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="kt-heading kt-heading--md">
-                            Option de confidentialité
-                        </div>
-                        <div class="kt-form__section kt-form__section--first">
-                            <div class="kt-wizard-v1__form">
-                                <div class="row">
-                                    <div class="col-xl-6">
-                                        {!! form_row($form_post->online) !!}
-                                    </div>
-                                    <div class="col-xl-6">
-                                        {!! form_row($form_post->indexable) !!}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="kt-wizard-v1__content" data-ktwizard-type="step-content">
-                        <div class="kt-heading kt-heading--md">
-                            Ajouter du contenu pertinent a votre article
-                        </div>
-                        <div class="kt-form__section kt-form__section--first">
-                            @include('blog::application.posts.components.media_form')
-                        </div>
-                    </div>
-                    <div class="kt-form__actions">
-                        <div class="btn btn-secondary btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-prev">
-                            Précedent
-                        </div>
-                        <button type="submit" class="btn btn-success btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-submit">
-                            Valider
-                        </button>
-                        <div class="btn btn-brand btn-md btn-tall btn-wide kt-font-bold kt-font-transform-u" data-ktwizard-type="action-next">
-                            Suivant
-                        </div>
-                    </div>
-                    {!! form_end($form_post,false) !!}
-                </div>
+                {!! form_end($form_post,false) !!}
             </div>
         </div>
     </div>
