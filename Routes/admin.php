@@ -20,16 +20,25 @@ Route::prefix('posts')->as('post.')->group(function () {
         ->name('create');
     Route::post('store', 'PostController@store')
         ->name('store');
-    Route::get('edit/{id}', 'PostController@edit')
+
+
+
+    Route::get('show/{post}','PostController@show');
+
+    Route::get('edit/{post}', 'PostController@edit')
         ->name('edit');
-    Route::post('update/{id}', 'PostController@update')
+    Route::post('update/{post}', 'PostController@update')
         ->name('update');
-    Route::delete('destroy/{id}', 'PostController@destroy')
+
+
+
+
+    Route::delete('destroy/{post}', 'PostController@destroy')
         ->name('destroy');
     Route::prefix('translations')->as('translation.')->group(function () {
-        Route::get('/edit/{id}/{lang}', 'PostController@edit')
+        Route::get('/edit/{post}/{lang}', 'PostController@edit')
             ->name('edit');
-        Route::post('/update/{id}/{lang}', 'PostController@update')
+        Route::post('/update/{post}/{lang}', 'PostController@update')
             ->name('update');
     });
 });
