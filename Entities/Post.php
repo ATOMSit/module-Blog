@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Greabock\Tentacles\EloquentTentacle;
 use Hyn\Tenancy\Traits\UsesTenantConnection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
@@ -58,9 +59,7 @@ class Post extends Model implements HasMedia
      * @var array
      */
     public $translatable = [
-        'title',
-        'slug',
-        'body'
+        'title', 'slug', 'body'
     ];
 
     /**
@@ -101,6 +100,16 @@ class Post extends Model implements HasMedia
                     ->addMediaConversion('thumb')
                     ->fit(Manipulations::FIT_STRETCH, 250, 250);
             });
+    }
+
+    /**
+     * Return the tags of this post
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'blog__tag_post');
     }
 
     /**
