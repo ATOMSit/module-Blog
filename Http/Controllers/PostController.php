@@ -7,11 +7,14 @@ use App\Option;
 use App\Plugin;
 use App\Website;
 use Carbon\Carbon;
+use http\Client\Curl\User;
 use Igaster\LaravelTheme\Theme;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Kris\LaravelFormBuilder\FormBuilder;
 use Modules\Blog\Entities\Post;
+use Modules\Blog\Entities\Tag;
 use Modules\Blog\Forms\PostForm;
 use Modules\Blog\Http\Requests\PostRequest;
 use Illuminate\Http\Response;
@@ -159,7 +162,10 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        $this->authorize('show', $post);
+        $posts = Post::query()->with('tags')->findOrFail($post->id);
+        return ($posts['tags']['0']);
+        $this->authorize('view', $post);
+        return var_dump($post->tags);
         return view('blog::show')
             ->with('post', $post);
     }
@@ -173,7 +179,6 @@ class PostController extends Controller
      */
     public function create(FormBuilder $formBuilder)
     {
-        Auth::user()->givePermissionTo('blog_post_create');
         $this->authorize('create', Post::class);
         $form = $formBuilder->create(PostForm::class, [
             'method' => 'POST',
@@ -198,20 +203,11 @@ class PostController extends Controller
      */
     public function store(PostRequest $request)
     {
+        $user = Auth::id();
+        $user = \App\User::query()->findOrFail($user);
         $this->authorize('create', Post::class);
-        $post = $this->post->store(Auth::user(), $request->all());
-        if ($request->file('input_cropper') !== null) {
-            $width = $request->get('picture')['width'];
-            $height = $request->get('picture')['height'];
-            $x = $request->get('picture')['x'];
-            $y = $request->get('picture')['y'];
-            $post->addMedia($request->file('input_cropper'))
-                ->withManipulations([
-                    'thumb' => ['manualCrop' => "$width, $height, $x, $y"],
-                ])
-                ->toMediaCollection('cover');
-        }
-        return back()
+        $this->post->store($user, $request);
+        return redirect()->route('blog.admin.post.index', 200)
             ->with('success', "L'article a correctement était publié sur votre site internet");
     }
 
@@ -230,10 +226,12 @@ class PostController extends Controller
         $route = Route::currentRouteName();
         if ($route === "blog.admin.post.edit") {
             app()->setLocale($this->default_lang);
+            $posts = Post::query()->with('tags')->findOrFail($post->id);
+
             $formOptions = [
                 'method' => 'POST',
                 'url' => route('blog.admin.post.update', ['id' => $post->id]),
-                'model' => $post
+                'model' => $posts
             ];
         } elseif ($route === "blog.admin.post.translation.edit") {
             // Recuperation du site
@@ -241,11 +239,13 @@ class PostController extends Controller
             if ($exists === true) {
                 if ($lang !== null) {
                     app()->setLocale($lang);
+                    $posts = Post::query()->with('tags')->findOrFail($post->id);
+
                     $this->authorize('update', $post);
                     $formOptions = [
                         'method' => 'POST',
                         'url' => route('blog.admin.post.translation.update', ['id' => $post->id, 'lang' => $lang]),
-                        'model' => $post
+                        'model' => $posts
                     ];
 
                 }
@@ -262,7 +262,7 @@ class PostController extends Controller
         ]);
         app()->setLocale($this->default_lang);
         return view('blog::application.posts.post')
-            ->with('post', $post)
+            ->with('post', $posts)
             ->with('lang', $lang)
             ->with('form_post', $form);
     }

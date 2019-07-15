@@ -6,6 +6,7 @@ use App\Forms\PictureForm;
 use Carbon\Carbon;
 use Kris\LaravelFormBuilder\Field;
 use Kris\LaravelFormBuilder\Form;
+use Modules\Blog\Entities\Tag;
 use Modules\SEOBasic\Forms\BasicForm;
 
 class PostForm extends Form
@@ -48,6 +49,7 @@ class PostForm extends Form
             ->add('seobasic', 'form', [
                 'class' => $this->formBuilder->create(BasicForm::class)
             ])
+            ->add('tags', Field::SELECT)
             ->add('submit', Field::BUTTON_SUBMIT);
     }
 }

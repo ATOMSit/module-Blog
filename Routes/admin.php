@@ -12,6 +12,13 @@
 */
 
 Route::prefix('posts')->as('post.')->group(function () {
+
+    Route::prefix('tags')->as('tag.')->group(function () {
+        Route::get('{id}/store', 'PostController@tag');
+        Route::get('find', 'PostController@search')->name('find');
+    });
+
+
     Route::get('datatable', 'PostController@datatable')
         ->name('datatable');
     Route::get('index', 'PostController@index')
@@ -22,15 +29,12 @@ Route::prefix('posts')->as('post.')->group(function () {
         ->name('store');
 
 
-
-    Route::get('show/{post}','PostController@show');
+    Route::get('show/{post}', 'PostController@show');
 
     Route::get('edit/{post}', 'PostController@edit')
         ->name('edit');
     Route::post('update/{post}', 'PostController@update')
         ->name('update');
-
-
 
 
     Route::delete('destroy/{post}', 'PostController@destroy')

@@ -17,12 +17,13 @@
 @endsection
 
 @push('styles')
-    <link href="{{asset('application/app/custom/wizard/wizard-v1.default.css')}}" rel="stylesheet" type="text/css"/>
     <link href="{{asset('application/vendors/general/bootstrap-datetime-picker/css/bootstrap-datetimepicker.css')}}" rel="stylesheet" type="text/css"/>
 @endpush
 
 @push('scripts')
     <script src="{{asset('application/vendors/general/bootstrap-datetime-picker/js/bootstrap-datetimepicker.min.js')}}" type="text/javascript"></script>
+    <script src="{{asset('application/vendors/general/select2/dist/js/select2.full.js')}}" type="text/javascript"></script>
+    <script src="{{asset('application/js/pages/crud/forms/widgets/select2.js')}}" type="text/javascript"></script>
     <script>
         var KTBootstrapDatetimepicker = function () {
             var demos = function () {
@@ -49,6 +50,42 @@
         jQuery(document).ready(function () {
             KTBootstrapDatetimepicker.init();
         });
+    </script>
+    @isset($post)
+        <script>
+            var json = {{$post->tags}};
+            obj = JSON.parse(json);
+
+            console.log(obj);
+        </script>
+    @else
+
+    @endisset
+    <script>
+        $('#tags').select2({
+            reselectLastSelection: false,
+            closeOnSelect: false,
+            tags: true,
+            placeholder: "Choose tags...",
+            minimumInputLength: 2,
+            tokenSeparators: [',', ' '],
+            ajax: {
+                url: '../../../api/blog/tags/find',
+                dataType: 'json',
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.name,
+                                id: 'id' + item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            }
+        });
+
     </script>
 @endpush
 
@@ -121,7 +158,23 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="card">
+                                    <div class="card-header" id="headingOne8">
+                                        <div class="card-title" data-toggle="collapse" data-target="#collapseOne8" aria-expanded="false" aria-controls="collapseOne8">
+                                            <i class="fas fa-tags"></i> Tags et catégories
+                                        </div>
+                                    </div>
+                                    <div id="collapseOne8" class="collapse show" aria-labelledby="headingOne8" data-parent="#accordionExample6">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-xl-12">
 
+                                                    {!! form_row($form_post->tags,$options=['attr' => ['class'=>'form-control kt-select2','multiple' => 'multiple','id'=>'tags']]) !!}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="card">
                                     <div class="card-header" id="headingOne7">
                                         <div class="card-title" data-toggle="collapse" data-target="#collapseOne7" aria-expanded="false" aria-controls="collapseOne7">
@@ -141,14 +194,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="kt-portlet__foot">
-                        <div class="kt-form__actions">
-                            {!! form_row($form_post->submit,$options=['label'=>"Valider",'attr' => ['class' => 'btn btn-primary']]) !!}
-                        </div>
+                </div>
+                <div class="kt-portlet__foot">
+                    <div class="kt-form__actions">
+                        {!! form_row($form_post->submit,$options=['label'=>"Valider",'attr' => ['class' => 'btn btn-primary']]) !!}
                     </div>
                 </div>
-                {!! form_end($form_post,false) !!}
             </div>
+            {!! form_end($form_post,false) !!}
         </div>
     </div>
 @endsection

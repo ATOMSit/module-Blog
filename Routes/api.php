@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('tags/find', 'TagController@index')
+    ->name('find');
+
 Route::middleware('auth:api')->get('/blog', function (Request $request) {
     return $request->user();
 });
